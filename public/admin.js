@@ -211,6 +211,7 @@ async function showApp() {
   document.getElementById('loginScreen').hidden = true;
   document.getElementById('appShell').hidden = false;
   updateNotifBtn();
+  hideWspIfUnavailable();
   if (!dashboardLoaded) {
     dashboardLoaded = true;
     await loadOrders();
@@ -516,6 +517,14 @@ document.getElementById('dayOrdersCloseBtn').addEventListener('click', () => {
 
 // ── whatsapp ─────────────────────────────────────────────
 
+async function hideWspIfUnavailable() {
+  try {
+    const res = await fetch('/api/admin/whatsapp/status');
+    const data = await res.json();
+    if (data.available === false) document.getElementById('wspAdminBtn').hidden = true;
+  } catch (e) {}
+}
+
 let wspInterval = null;
 
 async function checkWspStatus() {
@@ -675,6 +684,11 @@ function renderOrder(order) {
   tags.className = 'order-tags';
   tags.appendChild(makeTag(order.mode === 'delivery' ? 'Delivery' : 'Retiro', order.mode === 'delivery'));
   tags.appendChild(makeTag(order.payment === 'efectivo' ? 'Efectivo' : 'Transferencia'));
+  if (order.zone) {
+    tags.appendChild(makeTag(order.deliveryFee
+      ? `${order.zone} · envío $${order.deliveryFee.toLocaleString('es-AR')}`
+      : order.zone));
+  }
   if (order.address) {
     const addrTag = makeTag(order.address);
     if (order.mode === 'delivery') {
@@ -699,7 +713,7 @@ function renderOrder(order) {
       const fullPhone = cleanPhone.length === 10 ? '549' + cleanPhone : cleanPhone;
       const wspTag = document.createElement('a');
       wspTag.className = 'tag order-wsp-tag';
-      wspTag.href = `https://wa.me/${fullPhone}?text=${encodeURIComponent(`Hola ${order.name}! Te escribimos de Sabor Urbano sobre tu pedido #${order.id.slice(0, 8)}.`)}`;
+      wspTag.href = `https://wa.me/${fullPhone}?text=${encodeURIComponent(`Hola ${order.name}! Te escribimos de Mía Hamburguesería sobre tu pedido #${order.id.slice(0, 8)}.`)}`;
       wspTag.target = '_blank';
       wspTag.innerHTML = `💬 WhatsApp`;
       tags.appendChild(wspTag);
@@ -948,7 +962,7 @@ function renderItemRow(item, categoryKey) {
   if (isAgotado) row.classList.add('row-agotado');
 
   const img = document.createElement('img');
-  img.src = item.img || 'assets/combo_profesional.png';
+  img.src = item.img || 'assets/mia-logo.png';
   img.alt = '';
   row.appendChild(img);
 
@@ -1182,7 +1196,7 @@ document.getElementById('itemImgUpload').addEventListener('change', async (e) =>
 });
 
 function updateImgPreview() {
-  document.getElementById('itemImgPreview').src = pendingImgPath || 'assets/combo_profesional.png';
+  document.getElementById('itemImgPreview').src = pendingImgPath || 'assets/mia-logo.png';
 }
 
 document.getElementById('itemCancelBtn').addEventListener('click', closeItemModal);
@@ -1206,7 +1220,7 @@ document.getElementById('itemSaveBtn').addEventListener('click', async () => {
   if (!price || price <= 0) { errorEl.textContent = 'Ingresá un precio válido.'; return; }
   if (!categoryKey) { errorEl.textContent = 'Seleccioná una categoría.'; return; }
 
-  const fallbackImg = document.getElementById('itemImgSelect')?.value || 'assets/combo_profesional.png';
+  const fallbackImg = document.getElementById('itemImgSelect')?.value || 'assets/mia-logo.png';
   const rawIngredients = document.getElementById('itemIngredients').value;
   const ingredientsArray = rawIngredients.split(',').map(s => s.trim()).filter(Boolean);
   

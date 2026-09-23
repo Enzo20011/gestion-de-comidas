@@ -3,14 +3,16 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Menú</title>
-<meta property="og:title" content="Menú">
-<meta property="og:description" content="¡Hacé tu pedido online!">
-<meta property="og:image" content="logo.svg">
-<link rel="icon" href="logo.svg" type="image/svg+xml">
+<title>Mía — Hamburguesería &amp; Cervecería</title>
+<meta name="description" content="Pedí online en Mía, hamburguesería y cervecería en Garupá, Misiones. Burgers, papas, combos, pintas y delivery.">
+<meta property="og:title" content="Mía — Hamburguesería &amp; Cervecería">
+<meta property="og:description" content="Fiel a la Mía. Pedí tus burgers online con retiro o delivery en Garupá.">
+<meta property="og:image" content="assets/mia-logo.png">
+<link rel="icon" href="assets/mia-logo.png" type="image/png">
+<link rel="apple-touch-icon" href="assets/mia-logo.png">
 <link rel="manifest" href="manifest.json">
-<meta name="theme-color" content="#e11d48">
-<link href="https://fonts.googleapis.com/css2?family=Anton&family=Outfit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<meta name="theme-color" content="#1d140f">
+<link href="https://fonts.googleapis.com/css2?family=Anton&family=Kaushan+Script&family=Outfit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="style.css">
 </head>
 <body>
@@ -20,7 +22,11 @@
   <div class="header-inner">
     <div class="header-top">
       <div class="logo-svg-wrap">
-        <img class="logo-emblem" src="logo.svg" id="logoImg" alt="Logo">
+        <img class="logo-emblem" src="assets/mia-logo.png" id="logoImg" alt="Mía Hamburguesería &amp; Cervecería">
+        <div class="logo-text">
+          <div class="logo-name">Mía</div>
+          <div class="logo-sub">Hamburguesería &amp; Cervecería</div>
+        </div>
       </div>
 
       <!-- Toggle visible solo en tablet/desktop desde el header -->
@@ -48,7 +54,7 @@
         </div>
       </div>
       <div class="search-wrap">
-        <input type="search" id="searchInput" class="search-input" placeholder="🔍 Buscar hamburguesas, combos, bebidas...">
+        <input type="search" id="searchInput" class="search-input" placeholder="🔍 Buscar burgers, combos, pintas...">
         <button class="search-clear-btn" id="searchClearBtn" hidden type="button" aria-label="Limpiar búsqueda">✕</button>
       </div>
       <div class="cats" id="catsMobile"></div>
@@ -58,11 +64,11 @@
 
 <div class="info-ribbon">
   <div class="info-ribbon-inner">
-    <span>🛵 Envíos sin demora</span>
+    <span>🛵 Delivery en Garupá y alrededores</span>
     <span class="ribbon-dot">·</span>
-    <span>⏱️ 30 a 45 min aprox</span>
+    <span>🌙 Todas las noches desde las 18 hs</span>
     <span class="ribbon-dot">·</span>
-    <span>💳 Efectivo, Transferencia o MP</span>
+    <span>💵 Efectivo o transferencia</span>
   </div>
 </div>
 
@@ -70,6 +76,12 @@
   Estamos cerrados en este momento. Podés armar tu pedido, pero no se puede confirmar hasta que abramos.
 </div>
 
+
+<section class="hero" aria-label="Fiel a la Mía">
+  <img class="hero-img" src="assets/mia-banner.png" alt="Fiel a la Mía">
+</section>
+
+<div class="highlights" id="highlights"></div>
 
 <!-- PAGE LAYOUT -->
 <div class="page-layout">
@@ -107,9 +119,12 @@
 </div>
 
 <footer class="site-footer">
-  <img class="footer-logo" src="logo.svg" alt="" id="footerLogo">
+  <img class="footer-logo" src="assets/mia-logo.png" alt="" id="footerLogo">
   <div class="footer-name" id="footerName"></div>
-  <div class="footer-note">Pedidos online · Retiro en local y delivery</div>
+  <div class="footer-tagline" id="footerTagline"></div>
+  <div class="footer-address" id="footerAddress"></div>
+  <div class="footer-links" id="footerLinks"></div>
+  <div class="footer-note">Pedidos online · Retiro en el local y delivery</div>
 </footer>
 
 <!-- CART BAR -->
@@ -157,7 +172,7 @@
 
     <div class="cm-section">
       <div class="cm-label">Algo más? (opcional)</div>
-      <textarea class="cm-comment" id="cm-comment" maxlength="150" placeholder="Ej: bien cocida, sin sal..."></textarea>
+      <textarea class="cm-comment" id="cm-comment" maxlength="150" placeholder="Ej: sin sal, la salsa aparte..."></textarea>
     </div>
 
     <div class="cm-footer">
@@ -190,25 +205,32 @@
     <div class="checkout-fields">
       <div class="delivery-input-wrap show" style="margin-bottom: 12px;">
         <label>Tu Nombre o Apodo</label>
-        <input class="delivery-input" id="nameInput" type="text" placeholder="Ej: Fede" maxlength="60">
+        <input class="delivery-input" id="nameInput" type="text" placeholder="Ej: Juli" maxlength="60">
       </div>
       <div class="delivery-input-wrap show" style="margin-bottom: 12px;">
-        <label>Tu Teléfono (Para notificaciones de WhatsApp)</label>
-        <input class="delivery-input" id="phoneInput" type="text" placeholder="Ej: 341 555 1234" maxlength="20">
+        <label>Tu teléfono</label>
+        <input class="delivery-input" id="phoneInput" type="text" placeholder="Ej: 376 412 3456" maxlength="20">
+      </div>
+
+      <div class="delivery-input-wrap" id="zoneInputWrap" style="margin-bottom: 12px;">
+        <label>Barrio (define el costo de envío)</label>
+        <select class="delivery-input" id="zoneInput" onchange="onZoneChange()"></select>
       </div>
 
       <div class="delivery-input-wrap" id="delInputWrap" style="margin-bottom: 12px;">
         <label>Dirección de entrega</label>
-        <input class="delivery-input" id="delInput" type="text" placeholder="Ej: Av. Principal 1234, Centro" maxlength="200" autocomplete="street-address">
+        <input class="delivery-input" id="delInput" type="text" placeholder="Ej: 90 Viviendas, Mz 9 Cs 12" maxlength="200" autocomplete="street-address">
       </div>
 
       <div class="delivery-input-wrap show" style="margin-bottom: 12px;">
         <label>Método de Pago</label>
         <select class="delivery-input" id="payInput" onchange="toggleCash()">
-          <option value="transferencia">Transferencia / MercadoPago</option>
+          <option value="transferencia">Transferencia</option>
           <option value="efectivo">Efectivo</option>
         </select>
       </div>
+
+      <div class="transfer-info" id="transferInfo"></div>
 
       <div class="delivery-input-wrap" id="cashInputWrap" style="display:none; margin-bottom: 12px;">
         <label>¿Con cuánto abonás?</label>
@@ -218,6 +240,11 @@
 
     <div class="om-error" id="omError" hidden></div>
     <div class="om-closed-notice" id="omClosedNotice" hidden>Estamos cerrados en este momento. Podés armar tu pedido, pero no se puede confirmar hasta que abramos.</div>
+
+    <div class="om-subtotal" id="omFeeRow" hidden>
+      <span>Envío</span>
+      <span id="omFee">$0</span>
+    </div>
 
     <div class="om-total">
       <span class="om-total-lbl">Total</span>

@@ -1,7 +1,7 @@
 :root {
-    --black:#000; --dark:#0a0a0c; --card:#17171a; --card2:#1f1f23; --border:rgba(255,255,255,.08);
-    --border-hover:rgba(255,255,255,.16);
-    --white:#fafafa; --cream:#e4e4e7; --muted:#9a9aa2;
+    --black:#0d0805; --dark:#150e0a; --card:#221812; --card2:#2d1f18; --border:rgba(241,218,188,.10);
+    --border-hover:rgba(241,218,188,.22);
+    --white:#fdf6ec; --cream:#f1dabc; --muted:#b8a492;
     --green:#10b981; --red:#ef4444; --gold:#f59e0b; --blue:#3b82f6; --purple:#a78bfa;
   }
   * { box-sizing: border-box; }
@@ -434,3 +434,15 @@
   }
 }
 
+
+/* filas del menú en celular: foto + nombre arriba, precio y botones abajo */
+@media (max-width: 600px) {
+  .menu-item-row { flex-wrap: wrap; align-items: flex-start; }
+  .menu-item-info { flex: 1 1 calc(100% - 60px); }
+  .menu-item-name { font-size: 14px; }
+  .menu-item-price { order: 3; margin-left: 54px; align-self: center; font-size: 14px; }
+  .menu-item-actions { order: 4; margin-left: auto; }
+  .menu-item-actions button { padding: 8px 10px; }
+  .stock-toggle-btn { font-size: 11px; }
+}
+.admin-ing-tag { color: var(--cream); background: rgba(241,218,188,0.08); }

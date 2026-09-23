@@ -58,19 +58,78 @@ function buildCatalog() {
 
 function renderBrand() {
   const b = MENU.brand;
-  document.title = `${b.name} — Menú`;
-  document.getElementById('logoImg').alt = b.name;
+  const fullName = b.fullName || b.name;
+  document.title = `${fullName} — Pedí online`;
+  document.getElementById('logoImg').alt = fullName;
   document.getElementById('sidebarInfo').innerHTML = `
-    <strong>${escapeHtml(b.name)}</strong>
-    ${escapeHtml(b.address)}<br>
+    <strong>${escapeHtml(fullName)}</strong>
+    ${b.mapsUrl
+      ? `<a href="${escapeHtml(b.mapsUrl)}" target="_blank" rel="noopener">${escapeHtml(b.address)}</a>`
+      : escapeHtml(b.address)}<br>
     ${b.hours.map(escapeHtml).join('<br>')}
   `;
 
   document.getElementById('openBadge').classList.toggle('closed', !b.isOpen);
   document.getElementById('openText').textContent = b.isOpen ? 'Abierto' : 'Cerrado';
-  document.getElementById('scheduleNote').textContent = b.isOpen ? b.scheduleNote : 'Fuera de horario de atención';
+  document.getElementById('scheduleNote').textContent = b.isOpen ? b.scheduleNote : 'Abrimos a las 18 hs';
   document.getElementById('closedBanner').hidden = b.isOpen;
-  document.getElementById('footerName').textContent = b.name;
+  document.getElementById('footerName').textContent = fullName;
+  document.getElementById('footerTagline').textContent = b.tagline ? `“${b.tagline}”` : '';
+  document.getElementById('footerAddress').innerHTML = `${escapeHtml(b.address)}<br>${b.hours.map(escapeHtml).join(' · ')}`;
+
+  const links = [];
+  if (b.whatsappNumber) links.push({ label: 'WhatsApp', url: 'https://wa.me/' + b.whatsappNumber });
+  (b.instagram || []).forEach(ig => links.push(ig));
+  if (b.mapsUrl) links.push({ label: 'Cómo llegar', url: b.mapsUrl });
+  document.getElementById('footerLinks').innerHTML = links.map(l =>
+    `<a href="${escapeHtml(l.url)}" target="_blank" rel="noopener">${escapeHtml(l.label)}</a>`
+  ).join('');
+
+  document.getElementById('highlights').innerHTML = (b.highlights || []).map(h => `
+    <div class="highlight">
+      <div class="highlight-icon" aria-hidden="true">${escapeHtml(h.icon)}</div>
+      <div>
+        <div class="highlight-title">${escapeHtml(h.title)}</div>
+        <div class="highlight-text">${escapeHtml(h.text)}</div>
+      </div>
+    </div>
+  `).join('');
+
+  renderZones();
+  toggleCash();
+}
+
+function renderZones() {
+  const zones = MENU.brand.deliveryZones || [];
+  const wrap = document.getElementById('zoneInputWrap');
+  if (zones.length === 0) { wrap.remove(); return; }
+  const saved = (() => { try { return localStorage.getItem('customer_zone') || ''; } catch { return ''; } })();
+  document.getElementById('zoneInput').innerHTML =
+    '<option value="">Elegí tu barrio</option>' +
+    zones.map(z => `<option value="${escapeHtml(z.name)}"${z.name === saved ? ' selected' : ''}>${escapeHtml(z.name)} — envío $${z.fee.toLocaleString('es-AR')}</option>`).join('') +
+    `<option value="otra"${saved === 'otra' ? ' selected' : ''}>Otra zona (envío a coordinar)</option>`;
+}
+
+function getDeliveryFee() {
+  if (deliveryMode !== 'delivery') return 0;
+  const select = document.getElementById('zoneInput');
+  if (!select) return 0;
+  const zone = (MENU.brand.deliveryZones || []).find(z => z.name === select.value);
+  return zone ? zone.fee : 0;
+}
+
+function onZoneChange() {
+  updateOrderTotals();
+}
+
+function updateOrderTotals() {
+  const subtotal = cart.reduce((a, i) => a + i.price * i.qty, 0);
+  const fee = getDeliveryFee();
+  const feeRow = document.getElementById('omFeeRow');
+  const zoneValue = document.getElementById('zoneInput')?.value;
+  feeRow.hidden = deliveryMode !== 'delivery' || !zoneValue;
+  document.getElementById('omFee').textContent = zoneValue === 'otra' ? 'A coordinar' : '$' + fee.toLocaleString('es-AR');
+  document.getElementById('omTotal').textContent = '$' + (subtotal + fee).toLocaleString('es-AR');
 }
 
 function renderNav() {
@@ -113,14 +172,15 @@ function renderSections() {
             return `
             <div class="pcard ${isAgotado ? 'card-agotado' : ''} ${inCartCount > 0 ? 'has-in-cart' : ''}" id="pcard-${item.id}">
               <div class="pimg-wrap">
-                <img src="${item.img || 'assets/combo_profesional.png'}" class="pimg" alt="${escapeHtml(item.name)}" loading="lazy">
+                <img src="${item.img || 'assets/mia-logo.png'}" class="pimg" alt="${escapeHtml(item.name)}" loading="lazy">
                 <div class="in-cart-badge" data-item-badge="${item.id}" ${inCartCount > 0 ? '' : 'style="display:none;"'}>${inCartCount}</div>
               </div>
               <div class="pinfo">
                 <div class="pname">${escapeHtml(item.name)}</div>
                 ${item.ingredients && item.ingredients.length > 0 ? `
                   <div class="p-tags">
-                    ${item.ingredients.map(ing => `<span class="p-tag">${escapeHtml(ing)}</span>`).join('')}
+                    ${item.ingredients.slice(0, 3).map(ing => `<span class="p-tag">${escapeHtml(ing)}</span>`).join('')}
+                    ${item.ingredients.length > 3 ? `<span class="p-tag p-tag-more">+${item.ingredients.length - 3}</span>` : ''}
                   </div>
                 ` : ''}
                 <div class="pdesc">${escapeHtml(item.desc)}</div>
@@ -296,6 +356,8 @@ function setMode(m) {
   });
   const delWrap = document.getElementById('delInputWrap');
   if (delWrap) delWrap.classList.toggle('show', m === 'delivery');
+  document.getElementById('zoneInputWrap')?.classList.toggle('show', m === 'delivery');
+  if (MENU) updateOrderTotals();
 }
 
 function switchCat(cat, btn) {
@@ -345,10 +407,12 @@ function openCustom(id) {
   document.getElementById('cm-pprice').textContent = '$' + item.price.toLocaleString('es-AR');
   
   const pdesc = document.getElementById('cm-pdesc');
-  if (pdesc) pdesc.textContent = item.desc || 'Preparación casera y fresca de la casa.';
+  if (pdesc) { pdesc.textContent = item.desc || ''; pdesc.hidden = !item.desc; }
+  const hasIngredients = item.ingredients && item.ingredients.length > 0;
+  document.getElementById('cm-ingredients-box').hidden = !item.desc && !hasIngredients;
   
   const pimg = document.getElementById('cm-pimg');
-  if (pimg) pimg.src = item.img || 'assets/combo_profesional.png';
+  if (pimg) pimg.src = item.img || 'assets/mia-logo.png';
 
   const tagsWrap = document.getElementById('cm-ingredients-tags');
   if (tagsWrap) {
@@ -371,7 +435,7 @@ function openCustom(id) {
   const remWrap = document.getElementById('cm-removables-section');
   const extWrap = document.getElementById('cm-extra-groups');
   
-  if (cocWrap) cocWrap.style.display = (isCustom && item.categoryKey !== 'milanesas') ? '' : 'none';
+  if (cocWrap) cocWrap.style.display = (isCustom && MENU.customizationOptions.coccion.length > 0 && item.categoryKey === 'hamburguesas') ? '' : 'none';
   if (remWrap) remWrap.style.display = isCustom ? '' : 'none';
   if (extWrap) extWrap.style.display = isCustom ? '' : 'none';
 
@@ -532,9 +596,9 @@ function openOrder() {
     `).join('');
   }
 
-  const total = cart.reduce((a, i) => a + i.price * i.qty, 0);
-  document.getElementById('omTotal').textContent = '$' + total.toLocaleString('es-AR');
   document.getElementById('delInputWrap').classList.toggle('show', deliveryMode === 'delivery');
+  document.getElementById('zoneInputWrap')?.classList.toggle('show', deliveryMode === 'delivery');
+  updateOrderTotals();
   showOrderError('');
   document.getElementById('omClosedNotice').hidden = MENU.brand.isOpen;
 
@@ -565,7 +629,7 @@ function renderUpsell() {
 
   const cartProductIds = new Set(cart.map(i => i.productId));
   const suggestions = [...catalog.values()]
-    .filter(item => !cartProductIds.has(item.id))
+    .filter(item => !cartProductIds.has(item.id) && !(typeof item.stock === 'number' && item.stock <= 0))
     .sort((a, b) => (a.customizable === b.customizable) ? 0 : (a.customizable ? 1 : -1))
     .slice(0, 8);
 
@@ -576,7 +640,7 @@ function renderUpsell() {
     <div class="upsell-scroll">
       ${suggestions.map(item => `
         <div class="upsell-card">
-          <img src="${item.img}" class="upsell-img" alt="${escapeHtml(item.name)}" loading="lazy">
+          <img src="${item.img || 'assets/mia-logo.png'}" class="upsell-img" alt="${escapeHtml(item.name)}" loading="lazy">
           <div class="upsell-name">${escapeHtml(item.name)}</div>
           <div class="upsell-price">$${item.price.toLocaleString('es-AR')}</div>
           <button class="upsell-add" data-upsell-add="${item.id}">Agregar</button>
@@ -610,6 +674,10 @@ function closeOrderBtn() {
 function toggleCash() {
   const payMode = document.getElementById('payInput').value;
   document.getElementById('cashInputWrap').style.display = payMode === 'efectivo' ? 'block' : 'none';
+  const info = document.getElementById('transferInfo');
+  const alias = MENU && MENU.brand.transferAlias;
+  info.hidden = payMode !== 'transferencia' || !alias;
+  if (alias) info.innerHTML = `Alias: <strong>${escapeHtml(alias)}</strong> · Mandá el comprobante por WhatsApp.`;
 }
 
 function showOrderError(msg) {
@@ -635,6 +703,13 @@ async function sendWsp() {
   
   const phone = document.getElementById('phoneInput').value.trim();
 
+  const zoneSelect = document.getElementById('zoneInput');
+  const zone = deliveryMode === 'delivery' && zoneSelect ? zoneSelect.value : '';
+  if (deliveryMode === 'delivery' && zoneSelect && !zone) {
+    showOrderError('Elegí tu barrio para calcular el envío.');
+    return;
+  }
+
   const address = document.getElementById('delInput').value.trim();
   if (deliveryMode === 'delivery' && !address) {
     showOrderError('Ingresá la dirección de entrega.');
@@ -657,7 +732,7 @@ async function sendWsp() {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
-        name, phone, mode: deliveryMode, address, payment, cashNote,
+        name, phone, mode: deliveryMode, zone, address, payment, cashNote,
         items: cart.map(i => ({ id: i.productId, price: i.price, qty: i.qty, custom: i.custom })),
       }),
     });
@@ -671,11 +746,15 @@ async function sendWsp() {
     return;
   }
 
+  const fee = getDeliveryFee();
+  const zoneLabel = zone === 'otra' ? 'Otra zona (envío a coordinar)' : zone;
   const modeLabel = deliveryMode === 'delivery' ? '*DELIVERY*' : '*RETIRO EN LOCAL*';
-  const addressLine = deliveryMode === 'delivery' ? `\nDirección: ${address}` : '';
+  const addressLine = deliveryMode === 'delivery'
+    ? `${zoneLabel ? `\nBarrio: ${zoneLabel}` : ''}\nDirección: ${address}`
+    : '';
   const payLabel = payment === 'efectivo'
     ? `Pago en efectivo (${cashNote || 'Monto a confirmar'})`
-    : `Transferencia / MercadoPago`;
+    : `Transferencia${MENU.brand.transferAlias ? ` (alias ${MENU.brand.transferAlias}) — envío el comprobante` : ''}`;
 
   let msg = `Hola ${MENU.brand.name}, soy ${name}, quiero hacer un pedido.\n\n${modeLabel}${addressLine}\n${payLabel}\n\n`;
   cart.forEach(item => {
@@ -683,14 +762,18 @@ async function sendWsp() {
     if (item.custom) msg += ` (${item.custom})`;
     msg += ` — $${(item.price * item.qty).toLocaleString('es-AR')}\n`;
   });
-  const total = cart.reduce((a, i) => a + i.price * i.qty, 0);
-  msg += `\n*TOTAL: $${total.toLocaleString('es-AR')}*\n\nPedido #${orderId.slice(0, 8)}\n¿Me confirman disponibilidad?`;
+  const subtotal = cart.reduce((a, i) => a + i.price * i.qty, 0);
+  if (deliveryMode === 'delivery' && zone) {
+    msg += zone === 'otra' ? `Envío: a coordinar\n` : `Envío: $${fee.toLocaleString('es-AR')}\n`;
+  }
+  msg += `\n*TOTAL: $${(subtotal + fee).toLocaleString('es-AR')}*\n\nPedido #${orderId.slice(0, 8)}\n¿Me confirman disponibilidad?`;
 
   // Guardar datos del cliente para próximas compras
   try {
     localStorage.setItem('customer_name', name);
     if (phone) localStorage.setItem('customer_phone', phone);
     if (address) localStorage.setItem('customer_address', address);
+    if (zone) localStorage.setItem('customer_zone', zone);
   } catch {}
 
   window.open('https://wa.me/' + MENU.brand.whatsappNumber + '?text=' + encodeURIComponent(msg), '_blank');

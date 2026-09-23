@@ -1,7 +1,5 @@
 node_modules/
 .env
 data/orders.json
-.wwebjs_cache/
-.wwebjs_auth/
-data/whatsapp_session/
 data/prints/
+.vercel

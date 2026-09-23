@@ -1,0 +1,9 @@
+.env
+node_modules
+data/orders.json
+data/prints
+raw.html
+fix_script.js
+fix_server.js
+replace.js
+logo.jpg

@@ -1,11 +1,12 @@
-const CACHE_NAME = 'menu-cache-v1';
+const CACHE_NAME = 'mia-cache-v2';
 const urlsToCache = [
   '/',
   '/index.html',
   '/style.css',
   '/script.js',
-  '/logo.svg',
-  'https://fonts.googleapis.com/css2?family=Anton&family=Outfit:wght@300;400;500;600;700&display=swap'
+  '/assets/mia-logo.png',
+  '/assets/mia-banner.png',
+  'https://fonts.googleapis.com/css2?family=Anton&family=Kaushan+Script&family=Outfit:wght@300;400;500;600;700&display=swap'
 ];
 
 self.addEventListener('install', event => {

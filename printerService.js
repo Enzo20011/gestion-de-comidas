@@ -1,7 +1,9 @@
 const fs = require('node:fs');
 const path = require('node:path');
 
-const PRINTS_DIR = path.join(__dirname, 'data', 'prints');
+const PRINTS_DIR = process.env.VERCEL
+  ? path.join('/tmp', 'mia-prints')
+  : path.join(__dirname, 'data', 'prints');
 if (!fs.existsSync(PRINTS_DIR)) {
   fs.mkdirSync(PRINTS_DIR, { recursive: true });
 }
@@ -12,7 +14,7 @@ function printTicket(order) {
   
   const date = new Date(order.createdAt).toLocaleString('es-AR', { timeZone: 'America/Argentina/Buenos_Aires' });
   let ticket = `=================================\n`;
-  ticket += `          SABOR URBANO           \n`;
+  ticket += `   MÍA HAMBURGUESERÍA & CERVECERÍA\n`;
   ticket += `=================================\n`;
   ticket += `Pedido #${order.id.slice(0, 8)}\n`;
   ticket += `Fecha: ${date}\n`;
@@ -21,6 +23,7 @@ function printTicket(order) {
   
   if (order.mode === 'delivery') {
     ticket += `Tipo: DELIVERY\n`;
+    if (order.zone) ticket += `Barrio: ${order.zone}\n`;
     ticket += `Dirección: ${order.address}\n`;
   } else {
     ticket += `Tipo: RETIRO EN LOCAL\n`;
@@ -37,6 +40,7 @@ function printTicket(order) {
     }
   }
   ticket += `---------------------------------\n`;
+  if (order.deliveryFee) ticket += `Envío: $${order.deliveryFee}\n`;
   ticket += `TOTAL: $${order.total}\n`;
   ticket += `=================================\n`;
 

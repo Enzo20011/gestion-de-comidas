@@ -1,147 +1,288 @@
 {
   "brand": {
-    "name": "Sabor Urbano",
-    "tagline": "Rico y rápido",
-    "address": "Centro, Tu Ciudad",
-    "hours": [
-      "Lun a Dom",
-      "12:00 – 15:00 hs",
-      "19:00 – 23:00 hs"
+    "name": "Mía",
+    "fullName": "Mía Hamburguesería & Cervecería",
+    "tagline": "Fiel a la Mía",
+    "address": "Esq. Santa Inés y Marcelino Benítez, Garupá, Misiones",
+    "mapsUrl": "https://www.google.com/maps/search/?api=1&query=-27.4826462,-55.8315851",
+    "instagram": [
+      {
+        "label": "@hamburgueseria_mia_",
+        "url": "https://www.instagram.com/hamburgueseria_mia_/"
+      },
+      {
+        "label": "@mia.burgerbeer",
+        "url": "https://www.instagram.com/mia.burgerbeer/"
+      }
     ],
-    "scheduleNote": "Hasta las 23:00 hs",
-    "whatsappNumber": "5491100000000",
+    "hours": [
+      "Todos los días",
+      "18:00 a 02:00 hs",
+      "Jue y vie hasta las 03:00 hs"
+    ],
+    "scheduleNote": "Todas las noches desde las 18 hs",
+    "whatsappNumber": "543765201692",
     "timezone": "America/Argentina/Buenos_Aires",
-    "openRanges": [
-      [
-        "12:00",
-        "15:00"
+    "weeklyHours": {
+      "0": [
+        [
+          "00:00",
+          "02:00"
+        ],
+        [
+          "18:00",
+          "24:00"
+        ]
       ],
-      [
-        "19:00",
-        "23:00"
+      "1": [
+        [
+          "00:00",
+          "02:00"
+        ],
+        [
+          "18:00",
+          "24:00"
+        ]
+      ],
+      "2": [
+        [
+          "00:00",
+          "02:00"
+        ],
+        [
+          "18:00",
+          "24:00"
+        ]
+      ],
+      "3": [
+        [
+          "00:00",
+          "02:00"
+        ],
+        [
+          "18:00",
+          "24:00"
+        ]
+      ],
+      "4": [
+        [
+          "00:00",
+          "02:00"
+        ],
+        [
+          "18:00",
+          "24:00"
+        ]
+      ],
+      "5": [
+        [
+          "00:00",
+          "03:00"
+        ],
+        [
+          "18:00",
+          "24:00"
+        ]
+      ],
+      "6": [
+        [
+          "00:00",
+          "03:00"
+        ],
+        [
+          "18:00",
+          "24:00"
+        ]
       ]
+    },
+    "transferAlias": "burguermia2026",
+    "deliveryZones": [
+      {
+        "name": "90 Viviendas",
+        "fee": 2000
+      },
+      {
+        "name": "Garupá",
+        "fee": 3000
+      },
+      {
+        "name": "Fátima",
+        "fee": 3000
+      },
+      {
+        "name": "Santa Cruz",
+        "fee": 3000
+      },
+      {
+        "name": "Altos Gonzales",
+        "fee": 3000
+      },
+      {
+        "name": "Villa Longa",
+        "fee": 3000
+      },
+      {
+        "name": "Santa Clara",
+        "fee": 3000
+      },
+      {
+        "name": "Potrillo",
+        "fee": 3000
+      },
+      {
+        "name": "Don Santiago",
+        "fee": 3000
+      },
+      {
+        "name": "Miguel Lanús",
+        "fee": 4000
+      },
+      {
+        "name": "Santa Inés",
+        "fee": 4000
+      },
+      {
+        "name": "Candelaria",
+        "fee": 5000
+      }
+    ],
+    "highlights": [
+      {
+        "icon": "🍻",
+        "title": "Viernes en el local",
+        "text": "20% OFF en tu consumo hasta las 22 hs y 3x2 en pintas."
+      },
+      {
+        "icon": "🎂",
+        "title": "¿Cumplís años?",
+        "text": "Torta gratis para el cumpleañero y 3x2 en tragos y pintas. Reservá por WhatsApp."
+      },
+      {
+        "icon": "🛵",
+        "title": "Delivery",
+        "text": "Garupá y alrededores. El costo de envío depende de tu barrio."
+      }
     ]
   },
   "customizationOptions": {
-    "coccion": [
-      "A punto",
-      "Jugosa",
-      "Bien cocida"
-    ],
+    "coccion": [],
     "removables": [
       "Sin cebolla",
       "Sin lechuga",
       "Sin tomate",
       "Sin mayonesa",
+      "Sin pepino",
       "Sin picante"
     ],
-    "extraGroups": [
-      {
-        "label": "Extras",
-        "options": [
-          {
-            "label": "+ Cheddar",
-            "price": 350
-          },
-          {
-            "label": "+ Bacon",
-            "price": 450
-          },
-          {
-            "label": "+ Huevo",
-            "price": 200
-          }
-        ]
-      },
-      {
-        "label": "Salsas y potes",
-        "options": [
-          {
-            "label": "+ Salsa casa",
-            "price": 300
-          },
-          {
-            "label": "+ Pote de mayonesa",
-            "price": 150
-          },
-          {
-            "label": "+ Pote de ketchup",
-            "price": 150
-          }
-        ]
-      }
-    ]
+    "extraGroups": []
   },
   "categories": [
     {
       "key": "combos",
       "navLabel": "Combos",
       "title": "Combos",
-      "subtitle": "Combos para ahorrar",
+      "subtitle": "Para compartir y ahorrar",
       "customizable": true,
       "promo": {
-        "badge": "Favoritos",
+        "badge": "Para compartir",
         "title": "COMBOS",
-        "highlight": "WOW",
-        "desc": "Dejate tentar por nuestras mejores combinaciones."
+        "highlight": "MÍA",
+        "desc": "Burgers, panchos, papas y bebida. Armá la mesa a tu medida."
       },
       "items": [
         {
           "id": "combo-1",
-          "name": "Combo Clásico",
-          "price": 10000,
-          "desc": "Hamburguesa Completa (medallón de carne vacuna 110g, queso muzzarella, jamón cocido, huevo a la plancha, lechuga fresca y tomate en pan brioche) + abundante porción de papas fritas doradas.",
-          "img": "assets/combo_profesional.png",
+          "name": "Combo 1",
+          "price": 16000,
+          "desc": "2 Completas + 2 guarniciones de papas.",
+          "img": "assets/mia-completa.png",
           "ingredients": [
-            "Carne vacuna 110g",
-            "Queso muzzarella",
-            "Jamón cocido",
-            "Huevo a la plancha",
-            "Lechuga y tomate",
-            "Papas fritas"
-          ]
-        },
-        {
-          "id": "combo-dc",
-          "name": "Combo Doble Carne",
-          "price": 12000,
-          "desc": "Hamburguesa Doble Carne (doble medallón de carne 220g, doble queso cheddar fundido y lluvia de panceta crocante en pan brioche) + porción de papas fritas doradas.",
-          "img": "assets/combo_profesional.png",
-          "ingredients": [
-            "Doble carne 220g",
-            "Doble cheddar fundido",
-            "Panceta crocante",
-            "Pan brioche",
-            "Papas fritas"
+            "2 Completas",
+            "2 guarniciones de papas"
           ]
         },
         {
           "id": "combo-2",
-          "name": "Combo Familiar",
-          "price": 17000,
-          "desc": "Para compartir: 2 Hamburguesas Completas (cada una con carne 110g, jamón, queso, huevo, lechuga y tomate en pan brioche) + súper porción grande de papas fritas.",
-          "img": "assets/combo_profesional.png",
+          "name": "Combo 2",
+          "price": 25000,
+          "desc": "4 Chess Burguer + papas + Coca-Cola 1L.",
+          "img": "assets/mia-chess-burguer.png",
           "ingredients": [
-            "2 Hamburguesas Completas",
-            "Carne 110g c/u",
-            "Jamón y queso",
-            "Huevo a la plancha",
-            "Papas fritas grandes"
+            "4 Chess Burguer",
+            "Papas",
+            "Coca-Cola 1L"
           ]
         },
         {
-          "id": "combo-ched",
-          "name": "Combo Cheddar Supreme",
-          "price": 21000,
-          "desc": "2 Hamburguesas Cheddar (cada una con doble medallón de carne 220g, doble cheddar fundido y panceta crujiente) + caja grande de papas fritas crujientes.",
-          "img": "assets/combo_profesional.png",
-          "stock": null,
+          "id": "combo-3",
+          "name": "Combo 3",
+          "price": 20000,
+          "desc": "2 Completas + 2 panchos + papas.",
+          "img": "assets/mia-completa.png",
           "ingredients": [
-            "2 Hamburguesas Cheddar",
-            "Doble carne 220g c/u",
-            "Cheddar fundido",
-            "Panceta crujiente",
-            "Caja grande de papas"
+            "2 Completas",
+            "2 panchos",
+            "Papas"
+          ]
+        },
+        {
+          "id": "combo-4",
+          "name": "Combo 4",
+          "price": 23000,
+          "desc": "4 panchos + papas + Coca-Cola 1L.",
+          "img": "assets/mia-pancho.png",
+          "ingredients": [
+            "4 panchos",
+            "Papas",
+            "Coca-Cola 1L"
+          ]
+        },
+        {
+          "id": "combo-5",
+          "name": "Combo 5",
+          "price": 30000,
+          "desc": "3 Completas + 3 panchos + papas.",
+          "img": "assets/mia-completa.png",
+          "ingredients": [
+            "3 Completas",
+            "3 panchos",
+            "Papas"
+          ]
+        },
+        {
+          "id": "combo-6",
+          "name": "Combo 6",
+          "price": 38000,
+          "desc": "4 Chess Burguer + 4 panchos + papas.",
+          "img": "assets/mia-chess-burguer.png",
+          "ingredients": [
+            "4 Chess Burguer",
+            "4 panchos",
+            "Papas"
+          ]
+        },
+        {
+          "id": "combo-7",
+          "name": "Combo 7",
+          "price": 10000,
+          "desc": "1 Completa + guarnición de papas + 1 pinta.",
+          "img": "assets/mia-completa.png",
+          "ingredients": [
+            "1 Completa",
+            "Guarnición de papas",
+            "1 pinta"
+          ]
+        },
+        {
+          "id": "combo-8",
+          "name": "Combo 8",
+          "price": 19000,
+          "desc": "2 Completas + guarnición de papas + 1 pinta.",
+          "img": "assets/mia-completa.png",
+          "ingredients": [
+            "2 Completas",
+            "Guarnición de papas",
+            "1 pinta"
           ]
         }
       ]
@@ -150,194 +291,810 @@
       "key": "hamburguesas",
       "navLabel": "Hamburguesas",
       "title": "Hamburguesas",
-      "subtitle": "100% Carne Casera",
+      "subtitle": "Las mejores burgers de Garupá",
       "customizable": true,
+      "promo": {
+        "badge": "Fiel a la Mía",
+        "title": "BURGERS",
+        "highlight": "MÍA",
+        "desc": "Fuego, plancha e ingredientes frescos en cada pedido."
+      },
       "items": [
         {
-          "id": "h-completa",
+          "id": "chess-burguer",
+          "name": "Chess Burguer",
+          "price": 5000,
+          "desc": "",
+          "img": "assets/mia-chess-burguer.png",
+          "ingredients": [
+            "1 carne",
+            "2 cheddar",
+            "Mayonesa"
+          ]
+        },
+        {
+          "id": "completa",
           "name": "Completa",
-          "price": 7000,
-          "desc": "Medallón de carne casera de 110g, queso muzzarella fundido, jamón cocido, huevo a la plancha, lechuga capuchina, rodajas de tomate y mayonesa en pan brioche tostado.",
-          "img": "assets/hamburguesa_profesional.png",
+          "price": 6000,
+          "desc": "La clásica de Mía.",
+          "img": "assets/mia-completa.png",
           "ingredients": [
-            "Carne casera 110g",
-            "Queso muzzarella",
-            "Jamón cocido",
-            "Huevo a la plancha",
-            "Lechuga y tomate",
-            "Mayonesa casera"
+            "1 carne",
+            "Cheddar",
+            "Jamón",
+            "Huevo",
+            "Lechuga",
+            "Tomate",
+            "Mayonesa"
+          ],
+          "stock": 0
+        },
+        {
+          "id": "el-reverendo",
+          "name": "El Reverendo",
+          "price": 6500,
+          "desc": "Con picante, para los que se animan.",
+          "img": "assets/mia-el-reverendo.png",
+          "ingredients": [
+            "1 carne",
+            "Bacon",
+            "Cebolla",
+            "Huevo",
+            "Pepino",
+            "Picante"
           ]
         },
         {
-          "id": "h-dc",
-          "name": "Doble Carne",
-          "price": 9000,
-          "desc": "Doble medallón de carne vacuna (220g total), queso muzzarella fundido, jamón cocido, huevo a la plancha, lechuga fresca, rodajas de tomate y mayonesa en pan brioche.",
-          "img": "assets/hamburguesa_profesional.png",
+          "id": "tasty-burguer",
+          "name": "Tasty Burguer",
+          "price": 8000,
+          "desc": "",
+          "img": "assets/mia-tasty-burguer.png",
           "ingredients": [
-            "Doble carne 220g",
-            "Queso muzzarella",
-            "Jamón cocido",
-            "Huevo a la plancha",
-            "Lechuga y tomate",
-            "Mayonesa casera"
+            "2 carnes",
+            "2 cheddar",
+            "2 bacon",
+            "Lechuga",
+            "Tomate",
+            "Cebolla"
           ]
         },
         {
-          "id": "h-che",
-          "name": "Cheddar & Bacon",
-          "price": 10500,
-          "desc": "Doble medallón de carne vacuna (220g total), doble feta de queso cheddar fundido, panceta crocante ahumada y salsa barbacoa de la casa en pan brioche tostado.",
-          "img": "assets/hamburguesa_profesional.png",
+          "id": "oklahoma",
+          "name": "Oklahoma",
+          "price": 8000,
+          "desc": "",
+          "img": "assets/mia-oklahoma.png",
           "ingredients": [
-            "Doble carne 220g",
-            "Doble cheddar fundido",
-            "Panceta crocante",
-            "Salsa barbacoa",
-            "Pan brioche"
-          ]
-        }
-      ]
-    },
-    {
-      "key": "sandwiches",
-      "navLabel": "Sandwiches",
-      "title": "Sandwiches",
-      "subtitle": "Los Clásicos",
-      "customizable": true,
-      "items": [
-        {
-          "id": "s-lom",
-          "name": "Lomito Grande",
-          "price": 12000,
-          "desc": "Bife de lomo tierno a la plancha, queso muzzarella fundido, jamón cocido, huevo frito, lechuga fresca, rodajas de tomate y mayonesa casera en pan artesanal tostado.",
-          "img": "assets/lomito_profesional.png",
-          "ingredients": [
-            "Bife de lomo tierno",
-            "Queso muzzarella",
-            "Jamón cocido",
-            "Huevo frito",
-            "Lechuga y tomate",
-            "Mayonesa casera"
+            "2 carnes",
+            "Cebolla",
+            "2 cheddar",
+            "2 queso barra"
           ]
         },
         {
-          "id": "s-grat",
-          "name": "Lomito Gratinado",
-          "price": 14000,
-          "desc": "Bife de lomo tierno a la plancha cubierto con abundante mozzarella gratinada al horno, jamón cocido, huevo a la plancha, lechuga fresca, tomate y orégano en pan tostado.",
-          "img": "assets/lomito_profesional.png",
+          "id": "mc-melt",
+          "name": "Mc Melt",
+          "price": 8000,
+          "desc": "",
+          "img": "assets/mia-mc-melt.png",
           "ingredients": [
-            "Bife de lomo tierno",
-            "Muzzarella gratinada",
-            "Jamón cocido",
-            "Huevo a la plancha",
-            "Tomate y orégano"
+            "2 carnes",
+            "2 bacon",
+            "4 cheddar",
+            "Salsa"
           ]
         },
         {
-          "id": "s-mila",
-          "name": "Sándwich de Mila",
+          "id": "max-burguer",
+          "name": "Max Burguer",
+          "price": 8500,
+          "desc": "",
+          "img": "assets/mia-max-burguer.png",
+          "ingredients": [
+            "2 carnes",
+            "Pan medio",
+            "Lechuga",
+            "Tomate",
+            "Cebolla",
+            "Pepino",
+            "Cheddar"
+          ]
+        },
+        {
+          "id": "h-d-p",
+          "name": "H.D.P",
           "price": 10000,
-          "desc": "Milanesa de ternera casera frita al punto justo, jamón cocido, queso muzzarella derretido, lechuga crujiente, tomate fresco y aderezo en pan sanguchero casero de 20cm.",
-          "img": "assets/milanesa_profesional.png",
+          "desc": "Triple carne para los que vienen con hambre de verdad.",
+          "img": "assets/mia-h-d-p.png",
           "ingredients": [
-            "Milanesa ternera casera",
-            "Queso muzzarella",
-            "Jamón cocido",
-            "Lechuga y tomate",
-            "Pan sanguchero 20cm"
-          ]
-        }
-      ]
-    },
-    {
-      "key": "milanesas",
-      "navLabel": "Milanesas",
-      "title": "Milanesas al Plato",
-      "subtitle": "Gigantes y Ricas",
-      "customizable": true,
-      "items": [
-        {
-          "id": "m-napo",
-          "name": "Milanesa Napolitana",
-          "price": 12000,
-          "desc": "Milanesa de carne de ternera al plato, bañada en salsa de tomate casera con jamón cocido y abundante queso muzzarella gratinado al horno. Acompañada con papas fritas.",
-          "img": "assets/milanesa_profesional.png",
-          "ingredients": [
-            "Milanesa ternera al plato",
-            "Salsa de tomate casera",
-            "Jamón cocido",
-            "Muzzarella gratinada",
-            "Papas fritas"
+            "3 carnes",
+            "5 cheddar",
+            "3 bacon",
+            "Salsa"
           ]
         },
         {
-          "id": "m-cab",
-          "name": "Milanesa a Caballo",
-          "price": 10000,
-          "desc": "Milanesa de carne de ternera dorada y crujiente al plato, coronada con dos huevos fritos a caballo. Acompañada con guarnición de papas fritas.",
-          "img": "assets/milanesa_profesional.png",
+          "id": "hamburguesa-de-pollo",
+          "name": "Hamburguesa de pollo",
+          "price": 6000,
+          "desc": "",
+          "img": "assets/mia-hamburguesa-de-pollo.png",
           "ingredients": [
-            "Milanesa ternera al plato",
-            "2 Huevos fritos",
-            "Papas fritas doradas"
+            "Pollo",
+            "Lechuga",
+            "Tomate",
+            "Queso",
+            "Aros de cebolla"
+          ]
+        },
+        {
+          "id": "mc-chicken",
+          "name": "Mc Chicken",
+          "price": 6000,
+          "desc": "",
+          "img": "assets/mia-mc-chicken.png",
+          "ingredients": [
+            "Pollo frito",
+            "Bacon",
+            "Cheddar",
+            "Salsa cheddar"
+          ]
+        },
+        {
+          "id": "chicken-crispy",
+          "name": "Chicken Crispy",
+          "price": 6000,
+          "desc": "La favorita de todos.",
+          "img": "assets/mia-chicken-crispy.png",
+          "ingredients": [
+            "Pollo crispy",
+            "Salsa",
+            "Aros de cebolla",
+            "Mozzarella"
+          ]
+        },
+        {
+          "id": "clasica-de-carrito",
+          "name": "Clásica de carrito",
+          "price": 4000,
+          "desc": "",
+          "img": "assets/mia-clasica-de-carrito.jpg",
+          "ingredients": [
+            "Medallón",
+            "Huevo",
+            "Jamón",
+            "Queso",
+            "Lechuga",
+            "Tomate"
           ]
         }
       ]
     },
     {
       "key": "papas",
-      "navLabel": "Papas Fritas",
-      "title": "Cajas de Papas Fritas",
-      "subtitle": "Crujientes, Doradas",
+      "navLabel": "Papas",
+      "title": "Papas",
+      "subtitle": "Porque si son papas de Mía, son MIS papas",
       "customizable": false,
       "items": [
         {
-          "id": "p-trad",
-          "name": "Porción Tradicional",
+          "id": "guarnicion-de-papas",
+          "name": "Guarnición de papas",
+          "price": 3000,
+          "desc": "Porción chica de papas fritas, ideal para acompañar.",
+          "img": "assets/mia-guarnicion-de-papas.png"
+        },
+        {
+          "id": "cono-de-papas",
+          "name": "Cono de papas",
           "price": 4000,
-          "desc": "Papas bastón cortadas y fritas en el momento, doraditas y crocantes con sal fina.",
-          "img": "assets/papas_profesional.png",
+          "desc": "Papas fritas doradas servidas en cono.",
+          "img": "assets/mia-cono-de-papas.png"
+        },
+        {
+          "id": "porcion-de-papas",
+          "name": "Porción de papas",
+          "price": 6000,
+          "desc": "Porción grande de papas fritas para compartir.",
+          "img": "assets/mia-porcion-de-papas.png"
+        },
+        {
+          "id": "papas-con-cheddar",
+          "name": "Papas con cheddar",
+          "price": 7500,
+          "desc": "Porción de papas fritas bañadas en cheddar.",
+          "img": "assets/mia-papas-con-cheddar.png",
           "ingredients": [
-            "Papas bastón naturales",
-            "Fritas al momento",
-            "Sal fina"
+            "Papas fritas",
+            "Cheddar"
           ]
         },
         {
-          "id": "p-grat",
-          "name": "Porción Gratinada",
-          "price": 7000,
-          "desc": "Papas fritas crocantes bañadas en salsa cheddar caliente derretida, lluvia de panceta crocante y ciboulette/verdeo fresco picado.",
-          "img": "assets/papas_profesional.png",
+          "id": "salchipapas",
+          "name": "Salchipapas",
+          "price": 10000,
+          "desc": "Porción de papas fritas con salchichas.",
+          "img": "assets/mia-salchipapas.png",
           "ingredients": [
-            "Papas bastón crocantes",
-            "Salsa cheddar caliente",
-            "Panceta crocante",
-            "Verdeo fresco"
+            "Papas fritas",
+            "Salchichas"
+          ]
+        },
+        {
+          "id": "papas-con-cheddar-y-bacon",
+          "name": "Papas con cheddar y bacon",
+          "price": 10000,
+          "desc": "Porción de papas fritas con cheddar y bacon.",
+          "img": "assets/mia-papas-con-cheddar-y-bacon.png",
+          "ingredients": [
+            "Papas fritas",
+            "Cheddar",
+            "Bacon"
+          ]
+        },
+        {
+          "id": "papas-gratinadas",
+          "name": "Papas gratinadas",
+          "price": 7500,
+          "desc": "Porción de papas fritas gratinadas.",
+          "img": "assets/mia-papas-gratinadas.png",
+          "ingredients": [
+            "Papas fritas",
+            "Queso gratinado"
           ]
         }
       ]
     },
     {
-      "key": "bebidas",
-      "navLabel": "Bebidas",
-      "title": "Bebidas",
-      "subtitle": "Bien frías",
+      "key": "entradas",
+      "navLabel": "Entradas",
+      "title": "Entradas",
+      "subtitle": "Para picar mientras llega la burger",
       "customizable": false,
       "items": [
         {
-          "id": "b-coca",
-          "name": "Coca Cola 1L",
-          "price": 3000,
-          "desc": "Gaseosa Coca-Cola sabor original 1 Litro, bien fría en botella de vidrio o plástico según disponibilidad.",
-          "img": "assets/coca_cola_profesional.png",
+          "id": "mix-de-fritos",
+          "name": "Mix de fritos",
+          "price": 10000,
+          "desc": "Papas y nuggets para picar.",
+          "img": "assets/mia-mix-de-fritos.png",
           "ingredients": [
-            "Gaseosa 1 Litro",
-            "Sabor original",
-            "Bien fría"
+            "Papas fritas",
+            "Nuggets"
           ]
+        },
+        {
+          "id": "nuggets-x24",
+          "name": "Nuggets x24",
+          "price": 10000,
+          "desc": "24 nuggets de pollo.",
+          "img": "assets/mia-nuggets-x24.png"
+        },
+        {
+          "id": "nuggets-con-papas",
+          "name": "Nuggets con papas",
+          "price": 10000,
+          "desc": "Nuggets de pollo con papas fritas.",
+          "img": "assets/mia-nuggets-con-papas.png",
+          "ingredients": [
+            "Nuggets",
+            "Papas fritas"
+          ]
+        },
+        {
+          "id": "pancho",
+          "name": "Pancho",
+          "price": 3000,
+          "desc": "Pancho clásico.",
+          "img": "assets/mia-pancho.png"
+        }
+      ]
+    },
+    {
+      "key": "sandwich",
+      "navLabel": "Sándwiches",
+      "title": "Sándwiches",
+      "subtitle": "Lomo y milanesa",
+      "customizable": true,
+      "items": [
+        {
+          "id": "sandwich-de-milanesa-de-pollo",
+          "name": "Sándwich de milanesa de pollo",
+          "price": 15000,
+          "desc": "Sándwich de milanesa de pollo.",
+          "img": "assets/mia-sandwich-de-milanesa-de-pollo.png"
+        },
+        {
+          "id": "sandwich-de-lomo",
+          "name": "Sándwich de lomo",
+          "price": 21000,
+          "desc": "Sándwich de lomo.",
+          "img": "assets/mia-sandwich-de-lomo.png"
+        },
+        {
+          "id": "medio-sandwich-de-mila-con-papas",
+          "name": "Medio sándwich de mila con papas",
+          "price": 12000,
+          "desc": "Medio sándwich de milanesa acompañado de papas fritas.",
+          "img": "assets/mia-medio-sandwich-de-mila-con-papas.png",
+          "ingredients": [
+            "Milanesa",
+            "Papas fritas"
+          ]
+        },
+        {
+          "id": "medio-sandwich-de-lomo-con-papas",
+          "name": "Medio sándwich de lomo con papas",
+          "price": 13000,
+          "desc": "Medio sándwich de lomo acompañado de papas fritas.",
+          "img": "assets/mia-medio-sandwich-de-lomo-con-papas.png",
+          "ingredients": [
+            "Lomo",
+            "Papas fritas"
+          ]
+        },
+        {
+          "id": "medio-sandwich-de-mila-de-pollo",
+          "name": "Medio sándwich de mila de pollo",
+          "price": 8000,
+          "desc": "Medio sándwich de milanesa de pollo.",
+          "img": "assets/mia-medio-sandwich-de-mila-de-pollo.png"
+        }
+      ]
+    },
+    {
+      "key": "cervezas",
+      "navLabel": "Cervezas",
+      "title": "Cervezas",
+      "subtitle": "Pintas tiradas y latas bien frías",
+      "customizable": false,
+      "promo": {
+        "badge": "Cervecería",
+        "title": "BIRRA",
+        "highlight": "MÍA",
+        "desc": "Honey, IPA, Stout, Pilsen, Session IPA, Amber y la Chingona."
+      },
+      "items": [
+        {
+          "id": "corona-710",
+          "name": "Corona 710",
+          "price": 8000,
+          "desc": "",
+          "img": "assets/mia-logo.png"
+        },
+        {
+          "id": "andes-650",
+          "name": "Andes 650",
+          "price": 8000,
+          "desc": "",
+          "img": "assets/mia-logo.png"
+        },
+        {
+          "id": "stella-artois-710",
+          "name": "Stella Artois 710",
+          "price": 8000,
+          "desc": "",
+          "img": "assets/mia-logo.png",
+          "stock": 0
+        },
+        {
+          "id": "peroni-650",
+          "name": "Peroni 650",
+          "price": 8000,
+          "desc": "",
+          "img": "assets/mia-logo.png",
+          "stock": 0
+        },
+        {
+          "id": "heineken-650",
+          "name": "Heineken 650",
+          "price": 8000,
+          "desc": "",
+          "img": "assets/mia-logo.png"
+        },
+        {
+          "id": "heineken-473cc",
+          "name": "Heineken 473cc",
+          "price": 4000,
+          "desc": "",
+          "img": "assets/mia-logo.png"
+        },
+        {
+          "id": "amstel-473cc",
+          "name": "Amstel 473cc",
+          "price": 3000,
+          "desc": "",
+          "img": "assets/mia-logo.png"
+        },
+        {
+          "id": "brahma-473cc",
+          "name": "Brahma 473cc",
+          "price": 3500,
+          "desc": "",
+          "img": "assets/mia-logo.png"
+        },
+        {
+          "id": "quilmes-473cc",
+          "name": "Quilmes 473cc",
+          "price": 3500,
+          "desc": "",
+          "img": "assets/mia-logo.png"
+        },
+        {
+          "id": "noelma",
+          "name": "Noelma",
+          "price": 2500,
+          "desc": "",
+          "img": "assets/mia-logo.png"
+        },
+        {
+          "id": "brahmita-269cc-chica",
+          "name": "Brahmita 269cc chica",
+          "price": 2500,
+          "desc": "",
+          "img": "assets/mia-logo.png"
+        },
+        {
+          "id": "michelob-269cc",
+          "name": "Michelob 269cc",
+          "price": 2500,
+          "desc": "",
+          "img": "assets/mia-logo.png"
+        },
+        {
+          "id": "munich-269cc",
+          "name": "Munich 269cc",
+          "price": 2500,
+          "desc": "",
+          "img": "assets/mia-logo.png"
+        },
+        {
+          "id": "estrella-galicia-269cc",
+          "name": "Estrella Galicia 269cc",
+          "price": 3000,
+          "desc": "",
+          "img": "assets/mia-logo.png"
+        },
+        {
+          "id": "pinta-honey",
+          "name": "Pinta Honey",
+          "price": 3000,
+          "desc": "",
+          "img": "assets/mia-logo.png"
+        },
+        {
+          "id": "pinta-ipa",
+          "name": "Pinta IPA",
+          "price": 3000,
+          "desc": "",
+          "img": "assets/mia-logo.png"
+        },
+        {
+          "id": "pinta-stout",
+          "name": "Pinta Stout",
+          "price": 3000,
+          "desc": "",
+          "img": "assets/mia-logo.png"
+        },
+        {
+          "id": "pinta-pilsen",
+          "name": "Pinta Pilsen",
+          "price": 3000,
+          "desc": "",
+          "img": "assets/mia-logo.png"
+        },
+        {
+          "id": "pinta-chingona",
+          "name": "Pinta Chingona",
+          "price": 3000,
+          "desc": "",
+          "img": "assets/mia-logo.png"
+        },
+        {
+          "id": "pinta-session-ipa",
+          "name": "Pinta Session IPA",
+          "price": 3000,
+          "desc": "",
+          "img": "assets/mia-logo.png"
+        },
+        {
+          "id": "estrella-galicia-473ml",
+          "name": "Estrella Galicia 473ML",
+          "price": 4000,
+          "desc": "",
+          "img": "assets/mia-logo.png"
+        },
+        {
+          "id": "pinta-amber-roja",
+          "name": "Pinta Amber roja",
+          "price": 3000,
+          "desc": "",
+          "img": "assets/mia-logo.png"
+        }
+      ]
+    },
+    {
+      "key": "tragos",
+      "navLabel": "Tragos",
+      "title": "Tragos",
+      "subtitle": "Daiquiri, caipi, Aperol, gin y fernet",
+      "customizable": false,
+      "items": [
+        {
+          "id": "daiquiri",
+          "name": "Daiquiri",
+          "price": 5000,
+          "desc": "",
+          "img": "assets/mia-daiquiri.jpg"
+        },
+        {
+          "id": "caipiri",
+          "name": "Caipiri",
+          "price": 5000,
+          "desc": "",
+          "img": "assets/mia-caipiri.jpg"
+        },
+        {
+          "id": "aperol",
+          "name": "Aperol",
+          "price": 5000,
+          "desc": "",
+          "img": "assets/mia-aperol.jpg"
+        },
+        {
+          "id": "gin",
+          "name": "Gin",
+          "price": 5000,
+          "desc": "",
+          "img": "assets/mia-gin.jpg"
+        },
+        {
+          "id": "fernet",
+          "name": "Fernet",
+          "price": 4000,
+          "desc": "",
+          "img": "assets/mia-fernet.jpg"
+        },
+        {
+          "id": "caipirinha",
+          "name": "Caipirinha",
+          "price": 5000,
+          "desc": "",
+          "img": "assets/mia-caipirinha.jpg"
+        }
+      ]
+    },
+    {
+      "key": "vinos",
+      "navLabel": "Vinos",
+      "title": "Vinos",
+      "subtitle": "Botellas para acompañar la cena",
+      "customizable": false,
+      "items": [
+        {
+          "id": "talisman-malbec",
+          "name": "Talismán Malbec",
+          "price": 8000,
+          "desc": "",
+          "img": "assets/mia-logo.png"
+        },
+        {
+          "id": "chacabuco-malbec",
+          "name": "Chacabuco Malbec",
+          "price": 8000,
+          "desc": "",
+          "img": "assets/mia-logo.png"
+        },
+        {
+          "id": "profugo-frutos-rojos",
+          "name": "Prófugo Frutos Rojos",
+          "price": 8000,
+          "desc": "",
+          "img": "assets/mia-logo.png"
+        },
+        {
+          "id": "estancia-mendoza-malbec",
+          "name": "Estancia Mendoza Malbec",
+          "price": 8000,
+          "desc": "",
+          "img": "assets/mia-logo.png"
+        },
+        {
+          "id": "sexy-fish-malbec",
+          "name": "Sexy Fish Malbec",
+          "price": 8000,
+          "desc": "",
+          "img": "assets/mia-logo.png"
+        },
+        {
+          "id": "estancia-mendoza-cabernet-sauvignon",
+          "name": "Estancia Mendoza Cabernet Sauvignon",
+          "price": 8000,
+          "desc": "",
+          "img": "assets/mia-logo.png"
+        },
+        {
+          "id": "dilema-rosado-dulce",
+          "name": "Dilema Rosado Dulce",
+          "price": 8000,
+          "desc": "",
+          "img": "assets/mia-logo.png"
+        },
+        {
+          "id": "dilema-blanco-dulce",
+          "name": "Dilema Blanco Dulce",
+          "price": 8000,
+          "desc": "",
+          "img": "assets/mia-logo.png"
+        },
+        {
+          "id": "talisman-cabernet-sauvignon",
+          "name": "Talismán Cabernet Sauvignon",
+          "price": 8000,
+          "desc": "",
+          "img": "assets/mia-logo.png"
+        },
+        {
+          "id": "dilema-malbec",
+          "name": "Dilema Malbec",
+          "price": 8000,
+          "desc": "",
+          "img": "assets/mia-logo.png"
+        },
+        {
+          "id": "dilema-tinto-velvet",
+          "name": "Dilema Tinto Velvet",
+          "price": 8000,
+          "desc": "",
+          "img": "assets/mia-logo.png"
+        }
+      ]
+    },
+    {
+      "key": "gaseosas",
+      "navLabel": "Gaseosas y agua",
+      "title": "Gaseosas y agua",
+      "subtitle": "Bebidas sin alcohol",
+      "customizable": false,
+      "items": [
+        {
+          "id": "coca-cola-1l-vidrio",
+          "name": "Coca-Cola 1L vidrio",
+          "price": 3500,
+          "desc": "",
+          "img": "assets/mia-logo.png"
+        },
+        {
+          "id": "coca-cola-1-5l-vidrio",
+          "name": "Coca-Cola 1,5L vidrio",
+          "price": 4500,
+          "desc": "",
+          "img": "assets/mia-logo.png"
+        },
+        {
+          "id": "coca-cola-1-5l-descartable",
+          "name": "Coca-Cola 1,5L descartable",
+          "price": 6000,
+          "desc": "",
+          "img": "assets/mia-logo.png"
+        },
+        {
+          "id": "fanta-1-5l-vidrio",
+          "name": "Fanta 1,5L vidrio",
+          "price": 4500,
+          "desc": "",
+          "img": "assets/mia-logo.png"
+        },
+        {
+          "id": "sprite-1-5l-vidrio",
+          "name": "Sprite 1,5L vidrio",
+          "price": 4500,
+          "desc": "",
+          "img": "assets/mia-logo.png"
+        },
+        {
+          "id": "manaos-3l",
+          "name": "Manaos 3L",
+          "price": 3000,
+          "desc": "",
+          "img": "assets/mia-logo.png"
+        },
+        {
+          "id": "cepita-del-valle-1-5l",
+          "name": "Cepita del Valle 1,5L",
+          "price": 4500,
+          "desc": "",
+          "img": "assets/mia-logo.png"
+        },
+        {
+          "id": "coca-cola-600cc",
+          "name": "Coca-Cola 600cc",
+          "price": 2500,
+          "desc": "",
+          "img": "assets/mia-logo.png",
+          "stock": 0
+        },
+        {
+          "id": "coca-cola-375cc",
+          "name": "Coca-Cola 375cc",
+          "price": 2000,
+          "desc": "",
+          "img": "assets/mia-logo.png",
+          "stock": 0
+        },
+        {
+          "id": "coca-cola-zero-375cc",
+          "name": "Coca-Cola Zero 375cc",
+          "price": 2000,
+          "desc": "",
+          "img": "assets/mia-logo.png",
+          "stock": 0
+        },
+        {
+          "id": "sprite-375cc",
+          "name": "Sprite 375cc",
+          "price": 2000,
+          "desc": "",
+          "img": "assets/mia-logo.png",
+          "stock": 0
+        },
+        {
+          "id": "fanta-375cc",
+          "name": "Fanta 375cc",
+          "price": 2000,
+          "desc": "",
+          "img": "assets/mia-logo.png",
+          "stock": 0
+        },
+        {
+          "id": "aquarius-500cc",
+          "name": "Aquarius 500cc",
+          "price": 2000,
+          "desc": "",
+          "img": "assets/mia-logo.png"
+        },
+        {
+          "id": "powerade",
+          "name": "Powerade",
+          "price": 3500,
+          "desc": "",
+          "img": "assets/mia-logo.png"
+        },
+        {
+          "id": "fanta-1l",
+          "name": "Fanta 1L",
+          "price": 3500,
+          "desc": "",
+          "img": "assets/mia-logo.png"
+        },
+        {
+          "id": "sprite-1l",
+          "name": "Sprite 1L",
+          "price": 3500,
+          "desc": "",
+          "img": "assets/mia-logo.png"
+        },
+        {
+          "id": "manaos-chica",
+          "name": "Manaos chica",
+          "price": 1500,
+          "desc": "",
+          "img": "assets/mia-logo.png"
+        },
+        {
+          "id": "agua-500ml",
+          "name": "Agua 500ml",
+          "price": 1500,
+          "desc": "",
+          "img": "assets/mia-logo.png"
+        },
+        {
+          "id": "sierra-de-los-padres-500ml",
+          "name": "Sierra de los Padres 500ml",
+          "price": 2000,
+          "desc": "",
+          "img": "assets/mia-logo.png"
         }
       ]
     }

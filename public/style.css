@@ -1,25 +1,26 @@
 :root {
-    --black:  #000000;
-    --dark:   #09090b;
-    --card:   rgba(24, 24, 27, 0.65);
-    --card2:  rgba(39, 39, 42, 0.4);
-    --border: rgba(255, 255, 255, 0.08);
-    --border-hover: rgba(255, 255, 255, 0.15);
-    --white:  #fafafa;
-    --muted:  #a1a1aa;
-    --cream:  #e4e4e7;
-    --gold:   #f59e0b;
+    --black:  #0d0805;
+    --dark:   #150e0a;
+    --card:   rgba(45, 31, 24, 0.62);
+    --card2:  rgba(61, 41, 30, 0.45);
+    --border: rgba(241, 218, 188, 0.10);
+    --border-hover: rgba(241, 218, 188, 0.22);
+    --white:  #fdf6ec;
+    --muted:  #b8a492;
+    --cream:  #f1dabc;
+    --gold:   #e3a36f;
     --red:    #ef4444;
     --green:  #10b981;
-    --brand:  #e11d48;
-    --glass:  rgba(9, 9, 11, 0.7);
+    --brand:  #b87a52;
+    --brand-dark: #5e330b;
+    --glass:  rgba(21, 14, 10, 0.78);
   }
 
   * { margin:0; padding:0; box-sizing:border-box; -webkit-tap-highlight-color:transparent; }
 
   body {
     background-color: var(--dark);
-    background-image: radial-gradient(circle at 50% 0%, rgba(225, 29, 72, 0.15) 0%, var(--dark) 60%);
+    background-image: radial-gradient(circle at 50% 0%, rgba(184, 122, 82, 0.15) 0%, var(--dark) 60%);
     background-attachment: fixed;
     color: var(--white);
     font-family: 'Outfit', sans-serif;
@@ -59,8 +60,9 @@
 
   .logo-emblem {
     height: 52px;
-    width: auto;
-    object-fit: contain;
+    width: 52px;
+    object-fit: cover;
+    border-radius: 50%;
     flex-shrink: 0;
   }
 
@@ -430,9 +432,9 @@
 
   /* ── PROMO HERO ── */
   .promo {
-    background: linear-gradient(135deg, rgba(225,29,72,0.85) 0%, rgba(159,18,57,0.95) 100%);
-    border: 1px solid rgba(255,165,185,0.2);
-    box-shadow: 0 12px 35px rgba(225,29,72,0.25);
+    background: linear-gradient(135deg, rgba(184, 122, 82,0.85) 0%, rgba(94, 51, 11,0.95) 100%);
+    border: 1px solid rgba(241,218,188,0.18);
+    box-shadow: 0 12px 35px rgba(184, 122, 82,0.25);
     border-radius: 16px;
     padding: 22px;
     position: relative;
@@ -441,7 +443,7 @@
   }
 
   .promo::before {
-    content: 'COMBO';
+    content: 'MÍA';
     position: absolute;
     right: -6px; top: -8px;
     font-family: 'Anton', sans-serif;
@@ -591,9 +593,9 @@
   }
 
   .pcard.has-in-cart {
-    border-color: rgba(225, 29, 72, 0.45);
-    background: linear-gradient(135deg, rgba(225, 29, 72, 0.08) 0%, rgba(23, 23, 26, 0.98) 100%);
-    box-shadow: 0 4px 24px rgba(225, 29, 72, 0.15);
+    border-color: rgba(184, 122, 82, 0.45);
+    background: linear-gradient(135deg, rgba(184, 122, 82, 0.08) 0%, rgba(23, 23, 26, 0.98) 100%);
+    box-shadow: 0 4px 24px rgba(184, 122, 82, 0.15);
   }
 
   .pcard.card-agotado {
@@ -611,7 +613,7 @@
   .in-cart-badge {
     position: absolute;
     top: -6px; right: -6px;
-    background: #e11d48;
+    background: var(--brand);
     color: white;
     font-size: 11px;
     font-weight: 800;
@@ -619,7 +621,7 @@
     border-radius: 50%;
     display: flex; align-items: center; justify-content: center;
     border: 2px solid var(--dark);
-    box-shadow: 0 2px 8px rgba(225, 29, 72, 0.5);
+    box-shadow: 0 2px 8px rgba(184, 122, 82, 0.5);
     z-index: 2;
     animation: popIn 0.2s cubic-bezier(0.175, 0.885, 0.32, 1.275);
   }
@@ -672,7 +674,7 @@
 
   .pdesc {
     font-size: 12px;
-    color: #94a3b8;
+    color: var(--muted);
     margin-top: 4px;
     line-height: 1.45;
     display: -webkit-box;
@@ -685,7 +687,7 @@
   .p-tag {
     background: rgba(255, 255, 255, 0.06);
     border: 1px solid rgba(255, 255, 255, 0.1);
-    color: #e2e8f0; font-size: 11px; font-weight: 500;
+    color: var(--cream); font-size: 11px; font-weight: 500;
     padding: 2px 7px; border-radius: 6px; letter-spacing: 0.2px;
   }
 
@@ -946,7 +948,7 @@
     font-weight: 700;
     text-transform: uppercase;
     letter-spacing: 1.2px;
-    color: #f43f5e;
+    color: var(--gold);
     margin-bottom: 10px;
     display: flex;
     align-items: center;
@@ -964,9 +966,9 @@
     display: inline-flex;
     align-items: center;
     gap: 4px;
-    background: rgba(16, 185, 129, 0.12);
-    border: 1px solid rgba(16, 185, 129, 0.25);
-    color: #34d399;
+    background: rgba(184, 122, 82, 0.14);
+    border: 1px solid rgba(184, 122, 82, 0.35);
+    color: var(--cream);
     font-size: 11px;
     font-weight: 600;
     padding: 3px 8px;
@@ -975,7 +977,7 @@
 
   .cm-pdesc {
     font-size: 13px;
-    color: #e2e8f0;
+    color: var(--cream);
     line-height: 1.55;
     font-weight: 400;
   }
@@ -1099,14 +1101,14 @@
     transform: translateX(-50%);
     width: calc(100% - 40px);
     max-width: 500px;
-    background: rgba(255, 255, 255, 0.95);
+    background: rgba(241, 218, 188, 0.97);
     backdrop-filter: blur(16px);
     -webkit-backdrop-filter: blur(16px);
     border-radius: 24px;
     padding: 14px 20px;
     display: flex; align-items: center; justify-content: space-between;
     cursor: pointer;
-    box-shadow: 0 8px 40px rgba(225, 29, 72, 0.3);
+    box-shadow: 0 8px 40px rgba(184, 122, 82, 0.3);
     z-index: 200;
     transition: all 0.3s cubic-bezier(0.34,1.56,0.64,1);
   }
@@ -1117,7 +1119,7 @@
     pointer-events: none;
   }
 
-  .cart-bar:hover { background: var(--cream); }
+  .cart-bar:hover { background: #f7e6cf; }
   .cart-bar:active { transform: translateX(-50%) scale(0.97); }
 
   .cart-bar.bounce {
@@ -1126,7 +1128,7 @@
 
   @keyframes cartBounce {
     0% { transform: translateX(-50%) scale(1); }
-    40% { transform: translateX(-50%) scale(1.06); box-shadow: 0 12px 45px rgba(225, 29, 72, 0.45); }
+    40% { transform: translateX(-50%) scale(1.06); box-shadow: 0 12px 45px rgba(184, 122, 82, 0.45); }
     100% { transform: translateX(-50%) scale(1); }
   }
 
@@ -1412,3 +1414,134 @@
     transform: translateY(0);
   }
 }
+
+  /* ── MÍA: marca ── */
+  .logo-text { display: flex; flex-direction: column; line-height: 1; }
+  .logo-name {
+    font-family: 'Kaushan Script', cursive;
+    font-size: 30px;
+    color: var(--cream);
+    line-height: 0.9;
+  }
+  .logo-sub {
+    font-size: 9px;
+    letter-spacing: 2.5px;
+    text-transform: uppercase;
+    color: var(--gold);
+    margin-top: 4px;
+  }
+  @media (max-width: 380px) { .logo-sub { display: none; } }
+
+  .hero {
+    max-width: 1200px;
+    margin: 16px auto 0;
+    padding: 0 24px;
+  }
+  .hero-img {
+    display: block;
+    width: 100%;
+    height: auto;
+    aspect-ratio: 6 / 1;
+    object-fit: cover;
+    border-radius: 16px;
+    border: 1px solid var(--border);
+  }
+  @media (max-width: 600px) {
+    .hero { padding: 0 16px; margin-top: 12px; }
+    .hero-img { aspect-ratio: 4 / 1; object-fit: contain; background: #1d140f; border-radius: 12px; }
+  }
+
+  .highlights {
+    max-width: 1200px;
+    margin: 14px auto 0;
+    padding: 0 24px;
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 12px;
+  }
+  .highlights:empty { display: none; }
+  .highlight {
+    display: flex; gap: 12px; align-items: flex-start;
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 14px;
+    padding: 14px 16px;
+  }
+  .highlight-icon { font-size: 22px; line-height: 1; }
+  .highlight-title { font-weight: 700; font-size: 14px; color: var(--cream); margin-bottom: 3px; }
+  .highlight-text { font-size: 12.5px; color: var(--muted); line-height: 1.45; }
+  @media (max-width: 800px) {
+    .highlights {
+      grid-template-columns: none;
+      grid-auto-flow: column;
+      grid-auto-columns: 78%;
+      overflow-x: auto;
+      scroll-snap-type: x mandatory;
+      scroll-padding-inline: 16px;
+      padding: 0 16px 4px;
+      scrollbar-width: none;
+    }
+    .highlights::-webkit-scrollbar { display: none; }
+    .highlight { scroll-snap-align: start; }
+  }
+
+  /* productos sin foto: se muestra la tapita de Mía */
+  img.pimg[src$="mia-logo.png"],
+  img.upsell-img[src$="mia-logo.png"],
+  img.cm-pimg[src$="mia-logo.png"] {
+    object-fit: contain;
+    padding: 8px;
+    background: radial-gradient(circle, #2d1f18 0%, #150e0a 100%);
+  }
+
+  .sidebar-info a { color: var(--gold); text-decoration: none; }
+  .sidebar-info a:hover { text-decoration: underline; }
+
+  .transfer-info {
+    font-size: 13px;
+    color: var(--cream);
+    background: rgba(184, 122, 82, 0.12);
+    border: 1px dashed rgba(184, 122, 82, 0.5);
+    border-radius: 10px;
+    padding: 10px 12px;
+    margin-bottom: 12px;
+  }
+  .transfer-info[hidden] { display: none; }
+  .transfer-info strong { color: var(--gold); letter-spacing: 0.3px; user-select: all; }
+
+  .om-subtotal {
+    display: flex; justify-content: space-between;
+    font-size: 14px; color: var(--muted);
+    padding-top: 12px; border-top: 1px solid var(--border);
+  }
+  .om-subtotal[hidden] { display: none; }
+  .om-subtotal + .om-total { border-top: none; padding-top: 6px; }
+
+  .footer-logo { width: 64px; height: 64px; opacity: 0.9; object-fit: cover; }
+  .footer-name { font-size: 16px; }
+  .footer-tagline {
+    font-family: 'Kaushan Script', cursive;
+    font-size: 20px;
+    color: var(--gold);
+    margin-top: 6px;
+  }
+  .footer-address { font-size: 12.5px; color: var(--muted); margin-top: 10px; line-height: 1.6; }
+  .footer-links {
+    display: flex; flex-wrap: wrap; justify-content: center; gap: 8px;
+    margin: 14px 0 6px;
+  }
+  .footer-links a {
+    font-size: 12.5px; font-weight: 600;
+    color: var(--cream);
+    text-decoration: none;
+    border: 1px solid var(--border-hover);
+    border-radius: 999px;
+    padding: 7px 14px;
+    transition: border-color 0.15s, color 0.15s;
+  }
+  .footer-links a:hover { border-color: var(--brand); color: var(--gold); }
+
+  .cm-ingredients-box[hidden] { display: none; }
+  .p-tag-more { opacity: 0.7; }
+  /* el buscador ya tiene su propia X */
+  .search-input::-webkit-search-cancel-button { -webkit-appearance: none; appearance: none; display: none; }

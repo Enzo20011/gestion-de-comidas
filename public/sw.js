@@ -1,4 +1,4 @@
-const CACHE_NAME = 'mia-cache-v2';
+const CACHE_NAME = 'mia-cache-v3';
 const urlsToCache = [
   '/',
   '/index.html',
@@ -10,57 +10,56 @@ const urlsToCache = [
 ];
 
 self.addEventListener('install', event => {
+  // No esperar a que se cierren las pestañas viejas: pasar a activar apenas se instala.
+  self.skipWaiting();
   event.waitUntil(
-    caches.open(CACHE_NAME)
-      .then(cache => cache.addAll(urlsToCache))
-  );
-});
-
-self.addEventListener('fetch', event => {
-  if (event.request.url.includes('/api/')) {
-    // Para llamadas a la API, red (network-only) o network-first. Usamos network-only aquí.
-    return;
-  }
-  
-  event.respondWith(
-    caches.match(event.request)
-      .then(response => {
-        // Cache hit - return response
-        if (response) {
-          // Stale-while-revalidate: fetch in background to update cache
-          fetch(event.request).then(res => {
-            if(!res || res.status !== 200 || res.type !== 'basic') return;
-            caches.open(CACHE_NAME).then(cache => cache.put(event.request, res));
-          }).catch(() => {});
-          return response;
-        }
-        return fetch(event.request).then(
-          response => {
-            if(!response || response.status !== 200 || response.type !== 'basic') {
-              return response;
-            }
-            const responseToCache = response.clone();
-            caches.open(CACHE_NAME).then(cache => {
-              cache.put(event.request, responseToCache);
-            });
-            return response;
-          }
-        );
-      })
+    caches.open(CACHE_NAME).then(cache => cache.addAll(urlsToCache))
   );
 });
 
 self.addEventListener('activate', event => {
-  const cacheWhitelist = [CACHE_NAME];
   event.waitUntil(
-    caches.keys().then(cacheNames => {
-      return Promise.all(
-        cacheNames.map(cacheName => {
-          if (cacheWhitelist.indexOf(cacheName) === -1) {
-            return caches.delete(cacheName);
-          }
-        })
-      );
-    })
+    caches.keys()
+      .then(cacheNames => Promise.all(
+        cacheNames.filter(name => name !== CACHE_NAME).map(name => caches.delete(name))
+      ))
+      // Tomar el control de las pestañas ya abiertas, no solo de las nuevas.
+      .then(() => self.clients.claim())
   );
+});
+
+self.addEventListener('fetch', event => {
+  const req = event.request;
+  const url = new URL(req.url);
+
+  if (url.pathname.startsWith('/api/')) return; // llamadas a la API: siempre red
+
+  const sameOrigin = url.origin === self.location.origin;
+
+  if (sameOrigin) {
+    // Network-first: si hay conexión, siempre la versión más nueva del sitio.
+    // El caché queda solo como respaldo para cuando no hay señal.
+    event.respondWith(
+      fetch(req)
+        .then(res => {
+          if (res && res.status === 200 && res.type === 'basic') {
+            const copy = res.clone();
+            caches.open(CACHE_NAME).then(cache => cache.put(req, copy));
+          }
+          return res;
+        })
+        .catch(() => caches.match(req))
+    );
+  } else {
+    // Recursos externos (fuentes): casi no cambian, cache-first está bien.
+    event.respondWith(
+      caches.match(req).then(cached => cached || fetch(req).then(res => {
+        if (res && res.status === 200) {
+          const copy = res.clone();
+          caches.open(CACHE_NAME).then(cache => cache.put(req, copy));
+        }
+        return res;
+      }))
+    );
+  }
 });

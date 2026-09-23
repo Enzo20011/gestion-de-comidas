@@ -265,9 +265,33 @@
 
 <div class="btn-top" id="btnTop" role="button" aria-label="Volver arriba" onclick="window.scrollTo({top:0, behavior:'smooth'})">↑</div>
 
+<!-- AVISO DE PEDIDO ENVIADO -->
+<div class="order-toast" id="orderToast" role="status" aria-live="polite" hidden>
+  <div class="order-toast-icon">
+    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"></polyline></svg>
+  </div>
+  <div class="order-toast-body">
+    <div class="order-toast-title">¡Pedido enviado!</div>
+    <div class="order-toast-text" id="orderToastText">Te vamos a confirmar por WhatsApp en breve.</div>
+  </div>
+  <button class="order-toast-close" onclick="hideOrderToast()" aria-label="Cerrar aviso">✕</button>
+</div>
+
 <script src="script.js"></script>
 <script>
   if ('serviceWorker' in navigator) {
+    // Si ya había un service worker controlando esta pestaña (visita repetida)
+    // y cambia por uno nuevo (deploy nuevo), recargar una sola vez para ver
+    // la versión al día sin que el usuario tenga que hacerlo a mano. En la
+    // primera visita de un navegador (sin controller todavía) no aplica.
+    const hadController = !!navigator.serviceWorker.controller;
+    let swRefreshed = false;
+    navigator.serviceWorker.addEventListener('controllerchange', () => {
+      if (!hadController || swRefreshed) return;
+      swRefreshed = true;
+      window.location.reload();
+    });
+
     window.addEventListener('load', () => {
       navigator.serviceWorker.register('/sw.js').catch(error => {
         console.error('ServiceWorker registration failed: ', error);

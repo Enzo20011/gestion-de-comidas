@@ -702,6 +702,30 @@ function showOrderError(msg) {
   el.hidden = !msg;
 }
 
+// ── aviso de pedido enviado ──────────────────────────────
+
+let orderToastTimer = null;
+
+function showOrderToast(orderId) {
+  const toast = document.getElementById('orderToast');
+  document.getElementById('orderToastText').textContent =
+    `Te vamos a confirmar por WhatsApp en breve · Pedido #${orderId.slice(0, 8)}`;
+  toast.hidden = false;
+  void toast.offsetWidth;
+  toast.classList.add('show');
+  try { navigator.vibrate?.(20); } catch {}
+
+  clearTimeout(orderToastTimer);
+  orderToastTimer = setTimeout(hideOrderToast, 6000);
+}
+
+function hideOrderToast() {
+  clearTimeout(orderToastTimer);
+  const toast = document.getElementById('orderToast');
+  toast.classList.remove('show');
+  setTimeout(() => { toast.hidden = true; }, 400);
+}
+
 // ── checkout ─────────────────────────────────────────────
 
 async function sendWsp() {
@@ -807,6 +831,7 @@ async function sendWsp() {
   cart = [];
   updateBar();
   document.getElementById('orderOverlay').classList.remove('open');
+  showOrderToast(orderId);
 }
 
 

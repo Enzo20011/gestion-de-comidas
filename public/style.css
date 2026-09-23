@@ -1211,6 +1211,56 @@
     .cart-bar { display: none; }
   }
 
+  /* ── AVISO DE PEDIDO ENVIADO ── */
+  .order-toast {
+    position: fixed;
+    top: 16px;
+    left: 50%;
+    transform: translateX(-50%) translateY(-140%);
+    width: calc(100% - 32px);
+    max-width: 420px;
+    background: rgba(16, 185, 129, 0.16);
+    border: 1px solid rgba(16, 185, 129, 0.45);
+    backdrop-filter: blur(16px);
+    -webkit-backdrop-filter: blur(16px);
+    border-radius: 16px;
+    padding: 14px 14px 14px 16px;
+    display: flex;
+    align-items: flex-start;
+    gap: 12px;
+    box-shadow: 0 12px 40px rgba(0, 0, 0, 0.4);
+    z-index: 300;
+    opacity: 0;
+    transition: transform 0.4s cubic-bezier(0.34,1.56,0.64,1), opacity 0.3s;
+    pointer-events: none;
+  }
+  .order-toast.show {
+    transform: translateX(-50%) translateY(0);
+    opacity: 1;
+    pointer-events: auto;
+  }
+  .order-toast-icon {
+    width: 26px; height: 26px;
+    border-radius: 50%;
+    background: var(--green);
+    color: var(--black);
+    display: flex; align-items: center; justify-content: center;
+    flex-shrink: 0;
+    margin-top: 1px;
+  }
+  .order-toast-body { flex: 1; min-width: 0; }
+  .order-toast-title { font-weight: 700; font-size: 14px; color: var(--white); }
+  .order-toast-text { font-size: 12.5px; color: var(--cream); margin-top: 2px; line-height: 1.4; }
+  .order-toast-close {
+    background: none; border: none; color: var(--muted);
+    font-size: 13px; cursor: pointer; padding: 2px 4px; flex-shrink: 0;
+  }
+  .order-toast-close:hover { color: var(--white); }
+
+  @media (min-width: 1024px) {
+    .order-toast { top: 20px; }
+  }
+
   /* ── ORDER MODAL ── */
   .order-overlay {
     position: fixed; inset: 0;

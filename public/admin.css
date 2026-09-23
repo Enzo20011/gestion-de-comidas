@@ -160,9 +160,19 @@
 
   /* ── pedidos ── */
   .stats-row { display: none; } /* reemplazado por kpi-row del dashboard */
+  #ordersList {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 12px;
+    align-items: start;
+  }
+  @media (min-width: 900px) {
+    #ordersList { grid-template-columns: 1fr 1fr; }
+  }
+  #ordersList .empty { grid-column: 1 / -1; }
   .order {
     background: var(--card); border: 1px solid var(--border); border-radius: 14px;
-    padding: 16px; margin-bottom: 12px;
+    padding: 16px;
     transition: background .6s, border-color .6s;
   }
   .order.order-new {

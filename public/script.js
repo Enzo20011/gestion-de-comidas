@@ -38,13 +38,30 @@ async function init() {
     const btn = document.getElementById('btnTop');
     if (window.scrollY > 300) btn.classList.add('show');
     else btn.classList.remove('show');
-  });
+  }, { passive: true });
 
   document.addEventListener('keydown', (e) => {
     if (e.key !== 'Escape') return;
     if (document.getElementById('cmOverlay').classList.contains('open')) closeCMBtn();
     else if (document.getElementById('orderOverlay').classList.contains('open')) closeOrderBtn();
   });
+
+  setupModalScrollLock();
+
+  // Precalentar el modal de "Ver pedido": la primera vez que se abre es más
+  // lenta que las siguientes, porque ahí es cuando el navegador decodifica
+  // por primera vez las fotos de "Completá tu pedido". Las precargamos en
+  // segundo plano, con la página ya quieta, para que cuando el cliente
+  // abra el carrito de verdad esas fotos ya estén listas.
+  const warmUpImages = () => {
+    try {
+      [...catalog.values()].slice(0, 10).forEach(item => {
+        if (item.img) { const im = new Image(); im.src = item.img; }
+      });
+    } catch {}
+  };
+  if ('requestIdleCallback' in window) requestIdleCallback(warmUpImages, { timeout: 2000 });
+  else setTimeout(warmUpImages, 1200);
 }
 
 function buildCatalog() {
@@ -280,9 +297,19 @@ function initSearch() {
     });
   }
 
+  let searchDebounceTimer = null;
   input.addEventListener('input', (e) => {
     const val = e.target.value;
     if (clearBtn) clearBtn.hidden = !val.trim();
+
+    // El filtro recorre todo el catálogo: con debounce evitamos hacerlo en
+    // cada letra tipeada (sentía lag al escribir rápido), solo cuando hay
+    // una pausa breve.
+    clearTimeout(searchDebounceTimer);
+    searchDebounceTimer = setTimeout(() => runSearch(val), 120);
+  });
+
+  function runSearch(val) {
     const q = normalizeSearch(val);
     if (!q) {
       clearSearch();
@@ -318,11 +345,11 @@ function initSearch() {
         noResults.className = 'empty-category';
         document.getElementById('mainContent').appendChild(noResults);
       }
-      noResults.textContent = `No encontramos productos para "${e.target.value.trim()}".`;
+      noResults.textContent = `No encontramos productos para "${val.trim()}".`;
     } else if (noResults) {
       noResults.remove();
     }
-  });
+  }
 }
 
 function clearSearch() {
@@ -375,14 +402,39 @@ function switchCat(cat, btn) {
 
 // ── carrito ──────────────────────────────────────────────
 
+// Con un modal abierto, scrollear adentro (el detalle de un producto, el
+// pedido) no tiene que mover la página de fondo detrás — antes no había
+// nada que lo evitara. Se observan los tres overlays y, mientras cualquiera
+// esté abierto, se bloquea el scroll del body.
+function setupModalScrollLock() {
+  const overlays = ['cmOverlay', 'orderOverlay', 'confirmOverlay']
+    .map(id => document.getElementById(id))
+    .filter(Boolean);
+
+  const update = () => {
+    const anyOpen = overlays.some(el => el.classList.contains('open'));
+    document.body.classList.toggle('modal-open', anyOpen);
+  };
+
+  overlays.forEach(el => {
+    new MutationObserver(update).observe(el, { attributes: true, attributeFilter: ['class'] });
+  });
+  update();
+}
+
+function contentsLabel(item) {
+  return item && item.ingredients && item.ingredients.length ? 'Trae: ' + item.ingredients.join(', ') : '';
+}
+
 function quickAdd(id, e) {
   if (e && e.stopPropagation) e.stopPropagation();
   const item = catalog.get(id);
-  const existing = cart.find(i => i.productId === id && !i.custom);
+  const custom = contentsLabel(item);
+  const existing = cart.find(i => i.productId === id && i.custom === custom);
   if (existing) {
     existing.qty += 1;
   } else {
-    cart.push({ id: id + '_' + Date.now(), productId: id, name: item.name, price: item.price, qty: 1, custom: '' });
+    cart.push({ id: id + '_' + Date.now(), productId: id, name: item.name, price: item.price, qty: 1, custom });
   }
   updateBar();
   flashBtn(e && e.target);
@@ -493,6 +545,8 @@ function confirmCustom() {
   const comment = document.getElementById('cm-comment').value.trim();
 
   const customParts = [];
+  const contents = contentsLabel(currentProduct);
+  if (contents) customParts.push(contents);
   if (cocText && cocText !== MENU.customizationOptions.coccion[0]) customParts.push(cocText);
   if (rems.length) customParts.push(rems.join(', '));
   if (extras.length) customParts.push(extras.join(', '));
@@ -512,17 +566,28 @@ function confirmCustom() {
   if (reopenOrderAfterCustom) { reopenOrderAfterCustom = false; openOrder(); }
 }
 
+let lastBadgedIds = new Set();
+
 function updateCardBadges() {
+  // El catálogo tiene ~90 productos: en vez de recorrerlos todos en cada
+  // click del carrito, solo tocamos los que tienen cantidad ahora o la
+  // tenían antes (son unos pocos, no todo el catálogo).
   const counts = {};
   cart.forEach(i => { counts[i.productId] = (counts[i.productId] || 0) + i.qty; });
-  document.querySelectorAll('[data-item-badge]').forEach(el => {
-    const id = el.dataset.itemBadge;
+
+  const idsToUpdate = new Set([...lastBadgedIds, ...Object.keys(counts)]);
+  idsToUpdate.forEach(id => {
     const count = counts[id] || 0;
-    el.textContent = count;
-    el.style.display = count > 0 ? 'flex' : 'none';
+    const el = document.querySelector(`[data-item-badge="${id}"]`);
+    if (el) {
+      el.textContent = count;
+      el.style.display = count > 0 ? 'flex' : 'none';
+    }
     const card = document.getElementById('pcard-' + id);
     if (card) card.classList.toggle('has-in-cart', count > 0);
   });
+
+  lastBadgedIds = new Set(Object.keys(counts));
 }
 
 function updateBar() {
@@ -533,11 +598,20 @@ function updateBar() {
   const bar = document.getElementById('cartBar');
   bar.classList.toggle('gone', cart.length === 0);
 
+  const headerCount = document.getElementById('headerCartCount');
+  headerCount.textContent = count;
+  headerCount.hidden = count === 0;
+
   if (cart.length > 0) {
     bar.classList.remove('bounce');
     void bar.offsetWidth;
     bar.classList.add('bounce');
     try { navigator.vibrate?.(15); } catch {}
+
+    const headerBtn = document.getElementById('headerCartBtn');
+    headerBtn.classList.remove('bounce');
+    void headerBtn.offsetWidth;
+    headerBtn.classList.add('bounce');
   }
 
   updateCardBadges();
@@ -562,9 +636,33 @@ function changeQty(cartId, delta) {
   openOrder();
 }
 
-function clearCart() {
+function askConfirm(message, okLabel) {
+  return new Promise(resolve => {
+    const overlay = document.getElementById('confirmOverlay');
+    document.getElementById('confirmTitle').textContent = message;
+    const okBtn = document.getElementById('confirmOkBtn');
+    const cancelBtn = document.getElementById('confirmCancelBtn');
+    okBtn.textContent = okLabel || 'Confirmar';
+
+    function cleanup(result) {
+      overlay.classList.remove('open');
+      okBtn.removeEventListener('click', onOk);
+      cancelBtn.removeEventListener('click', onCancel);
+      resolve(result);
+    }
+    function onOk() { cleanup(true); }
+    function onCancel() { cleanup(false); }
+
+    okBtn.addEventListener('click', onOk);
+    cancelBtn.addEventListener('click', onCancel);
+    overlay.classList.add('open');
+  });
+}
+
+async function clearCart() {
   if (cart.length === 0) return;
-  if (!confirm('¿Vaciar todo el pedido?')) return;
+  const ok = await askConfirm('¿Vaciar todo el pedido?', 'Sí, vaciar');
+  if (!ok) return;
   cart = [];
   updateBar();
   closeOrderBtn();
@@ -619,8 +717,12 @@ function openOrder() {
   } catch {}
 
   document.getElementById('wspBtn').disabled = !MENU.brand.isOpen;
-  renderUpsell();
   document.getElementById('orderOverlay').classList.add('open');
+
+  // Los sugeridos recorren todo el catálogo para armar la lista: se difieren
+  // un par de frames para que no compitan con la animación de apertura del
+  // modal (evita el lag/stutter al entrar, sobre todo en celulares).
+  requestAnimationFrame(() => requestAnimationFrame(renderUpsell));
 }
 
 function renderUpsell() {
@@ -686,6 +788,30 @@ function showOrderError(msg) {
   el.hidden = !msg;
 }
 
+// ── aviso de pedido enviado ──────────────────────────────
+
+let orderToastTimer = null;
+
+function showOrderToast(orderId) {
+  const toast = document.getElementById('orderToast');
+  document.getElementById('orderToastText').textContent =
+    `Te vamos a confirmar por WhatsApp en breve · Pedido #${orderId.slice(0, 8)}`;
+  toast.hidden = false;
+  void toast.offsetWidth;
+  toast.classList.add('show');
+  try { navigator.vibrate?.(20); } catch {}
+
+  clearTimeout(orderToastTimer);
+  orderToastTimer = setTimeout(hideOrderToast, 6000);
+}
+
+function hideOrderToast() {
+  clearTimeout(orderToastTimer);
+  const toast = document.getElementById('orderToast');
+  toast.classList.remove('show');
+  setTimeout(() => { toast.hidden = true; }, 400);
+}
+
 // ── checkout ─────────────────────────────────────────────
 
 async function sendWsp() {
@@ -721,9 +847,13 @@ async function sendWsp() {
 
   const wspBtn = document.getElementById('wspBtn');
   const wspLabel = document.getElementById('wspBtnLabel');
+  const wspSpinner = document.getElementById('wspSpinner');
+  const wspIcon = document.getElementById('wspIcon');
   wspBtn.disabled = true;
   const origLabel = wspLabel.textContent;
   wspLabel.textContent = 'Enviando...';
+  wspSpinner.hidden = false;
+  wspIcon.hidden = true;
   showOrderError('');
 
   let orderId = null;
@@ -743,6 +873,8 @@ async function sendWsp() {
     showOrderError(e.message || 'No se pudo registrar el pedido. Probá de nuevo.');
     wspBtn.disabled = false;
     wspLabel.textContent = origLabel;
+    wspSpinner.hidden = true;
+    wspIcon.hidden = false;
     return;
   }
 
@@ -780,9 +912,12 @@ async function sendWsp() {
 
   wspBtn.disabled = false;
   wspLabel.textContent = origLabel;
+  wspSpinner.hidden = true;
+  wspIcon.hidden = false;
   cart = [];
   updateBar();
   document.getElementById('orderOverlay').classList.remove('open');
+  showOrderToast(orderId);
 }
 
 

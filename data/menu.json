@@ -1,0 +1,345 @@
+{
+  "brand": {
+    "name": "Sabor Urbano",
+    "tagline": "Rico y rápido",
+    "address": "Centro, Tu Ciudad",
+    "hours": [
+      "Lun a Dom",
+      "12:00 – 15:00 hs",
+      "19:00 – 23:00 hs"
+    ],
+    "scheduleNote": "Hasta las 23:00 hs",
+    "whatsappNumber": "5491100000000",
+    "timezone": "America/Argentina/Buenos_Aires",
+    "openRanges": [
+      [
+        "12:00",
+        "15:00"
+      ],
+      [
+        "19:00",
+        "23:00"
+      ]
+    ]
+  },
+  "customizationOptions": {
+    "coccion": [
+      "A punto",
+      "Jugosa",
+      "Bien cocida"
+    ],
+    "removables": [
+      "Sin cebolla",
+      "Sin lechuga",
+      "Sin tomate",
+      "Sin mayonesa",
+      "Sin picante"
+    ],
+    "extraGroups": [
+      {
+        "label": "Extras",
+        "options": [
+          {
+            "label": "+ Cheddar",
+            "price": 350
+          },
+          {
+            "label": "+ Bacon",
+            "price": 450
+          },
+          {
+            "label": "+ Huevo",
+            "price": 200
+          }
+        ]
+      },
+      {
+        "label": "Salsas y potes",
+        "options": [
+          {
+            "label": "+ Salsa casa",
+            "price": 300
+          },
+          {
+            "label": "+ Pote de mayonesa",
+            "price": 150
+          },
+          {
+            "label": "+ Pote de ketchup",
+            "price": 150
+          }
+        ]
+      }
+    ]
+  },
+  "categories": [
+    {
+      "key": "combos",
+      "navLabel": "Combos",
+      "title": "Combos",
+      "subtitle": "Combos para ahorrar",
+      "customizable": true,
+      "promo": {
+        "badge": "Favoritos",
+        "title": "COMBOS",
+        "highlight": "WOW",
+        "desc": "Dejate tentar por nuestras mejores combinaciones."
+      },
+      "items": [
+        {
+          "id": "combo-1",
+          "name": "Combo Clásico",
+          "price": 10000,
+          "desc": "Hamburguesa Completa (medallón de carne vacuna 110g, queso muzzarella, jamón cocido, huevo a la plancha, lechuga fresca y tomate en pan brioche) + abundante porción de papas fritas doradas.",
+          "img": "assets/combo_profesional.png",
+          "ingredients": [
+            "Carne vacuna 110g",
+            "Queso muzzarella",
+            "Jamón cocido",
+            "Huevo a la plancha",
+            "Lechuga y tomate",
+            "Papas fritas"
+          ]
+        },
+        {
+          "id": "combo-dc",
+          "name": "Combo Doble Carne",
+          "price": 12000,
+          "desc": "Hamburguesa Doble Carne (doble medallón de carne 220g, doble queso cheddar fundido y lluvia de panceta crocante en pan brioche) + porción de papas fritas doradas.",
+          "img": "assets/combo_profesional.png",
+          "ingredients": [
+            "Doble carne 220g",
+            "Doble cheddar fundido",
+            "Panceta crocante",
+            "Pan brioche",
+            "Papas fritas"
+          ]
+        },
+        {
+          "id": "combo-2",
+          "name": "Combo Familiar",
+          "price": 17000,
+          "desc": "Para compartir: 2 Hamburguesas Completas (cada una con carne 110g, jamón, queso, huevo, lechuga y tomate en pan brioche) + súper porción grande de papas fritas.",
+          "img": "assets/combo_profesional.png",
+          "ingredients": [
+            "2 Hamburguesas Completas",
+            "Carne 110g c/u",
+            "Jamón y queso",
+            "Huevo a la plancha",
+            "Papas fritas grandes"
+          ]
+        },
+        {
+          "id": "combo-ched",
+          "name": "Combo Cheddar Supreme",
+          "price": 21000,
+          "desc": "2 Hamburguesas Cheddar (cada una con doble medallón de carne 220g, doble cheddar fundido y panceta crujiente) + caja grande de papas fritas crujientes.",
+          "img": "assets/combo_profesional.png",
+          "stock": null,
+          "ingredients": [
+            "2 Hamburguesas Cheddar",
+            "Doble carne 220g c/u",
+            "Cheddar fundido",
+            "Panceta crujiente",
+            "Caja grande de papas"
+          ]
+        }
+      ]
+    },
+    {
+      "key": "hamburguesas",
+      "navLabel": "Hamburguesas",
+      "title": "Hamburguesas",
+      "subtitle": "100% Carne Casera",
+      "customizable": true,
+      "items": [
+        {
+          "id": "h-completa",
+          "name": "Completa",
+          "price": 7000,
+          "desc": "Medallón de carne casera de 110g, queso muzzarella fundido, jamón cocido, huevo a la plancha, lechuga capuchina, rodajas de tomate y mayonesa en pan brioche tostado.",
+          "img": "assets/hamburguesa_profesional.png",
+          "ingredients": [
+            "Carne casera 110g",
+            "Queso muzzarella",
+            "Jamón cocido",
+            "Huevo a la plancha",
+            "Lechuga y tomate",
+            "Mayonesa casera"
+          ]
+        },
+        {
+          "id": "h-dc",
+          "name": "Doble Carne",
+          "price": 9000,
+          "desc": "Doble medallón de carne vacuna (220g total), queso muzzarella fundido, jamón cocido, huevo a la plancha, lechuga fresca, rodajas de tomate y mayonesa en pan brioche.",
+          "img": "assets/hamburguesa_profesional.png",
+          "ingredients": [
+            "Doble carne 220g",
+            "Queso muzzarella",
+            "Jamón cocido",
+            "Huevo a la plancha",
+            "Lechuga y tomate",
+            "Mayonesa casera"
+          ]
+        },
+        {
+          "id": "h-che",
+          "name": "Cheddar & Bacon",
+          "price": 10500,
+          "desc": "Doble medallón de carne vacuna (220g total), doble feta de queso cheddar fundido, panceta crocante ahumada y salsa barbacoa de la casa en pan brioche tostado.",
+          "img": "assets/hamburguesa_profesional.png",
+          "ingredients": [
+            "Doble carne 220g",
+            "Doble cheddar fundido",
+            "Panceta crocante",
+            "Salsa barbacoa",
+            "Pan brioche"
+          ]
+        }
+      ]
+    },
+    {
+      "key": "sandwiches",
+      "navLabel": "Sandwiches",
+      "title": "Sandwiches",
+      "subtitle": "Los Clásicos",
+      "customizable": true,
+      "items": [
+        {
+          "id": "s-lom",
+          "name": "Lomito Grande",
+          "price": 12000,
+          "desc": "Bife de lomo tierno a la plancha, queso muzzarella fundido, jamón cocido, huevo frito, lechuga fresca, rodajas de tomate y mayonesa casera en pan artesanal tostado.",
+          "img": "assets/lomito_profesional.png",
+          "ingredients": [
+            "Bife de lomo tierno",
+            "Queso muzzarella",
+            "Jamón cocido",
+            "Huevo frito",
+            "Lechuga y tomate",
+            "Mayonesa casera"
+          ]
+        },
+        {
+          "id": "s-grat",
+          "name": "Lomito Gratinado",
+          "price": 14000,
+          "desc": "Bife de lomo tierno a la plancha cubierto con abundante mozzarella gratinada al horno, jamón cocido, huevo a la plancha, lechuga fresca, tomate y orégano en pan tostado.",
+          "img": "assets/lomito_profesional.png",
+          "ingredients": [
+            "Bife de lomo tierno",
+            "Muzzarella gratinada",
+            "Jamón cocido",
+            "Huevo a la plancha",
+            "Tomate y orégano"
+          ]
+        },
+        {
+          "id": "s-mila",
+          "name": "Sándwich de Mila",
+          "price": 10000,
+          "desc": "Milanesa de ternera casera frita al punto justo, jamón cocido, queso muzzarella derretido, lechuga crujiente, tomate fresco y aderezo en pan sanguchero casero de 20cm.",
+          "img": "assets/milanesa_profesional.png",
+          "ingredients": [
+            "Milanesa ternera casera",
+            "Queso muzzarella",
+            "Jamón cocido",
+            "Lechuga y tomate",
+            "Pan sanguchero 20cm"
+          ]
+        }
+      ]
+    },
+    {
+      "key": "milanesas",
+      "navLabel": "Milanesas",
+      "title": "Milanesas al Plato",
+      "subtitle": "Gigantes y Ricas",
+      "customizable": true,
+      "items": [
+        {
+          "id": "m-napo",
+          "name": "Milanesa Napolitana",
+          "price": 12000,
+          "desc": "Milanesa de carne de ternera al plato, bañada en salsa de tomate casera con jamón cocido y abundante queso muzzarella gratinado al horno. Acompañada con papas fritas.",
+          "img": "assets/milanesa_profesional.png",
+          "ingredients": [
+            "Milanesa ternera al plato",
+            "Salsa de tomate casera",
+            "Jamón cocido",
+            "Muzzarella gratinada",
+            "Papas fritas"
+          ]
+        },
+        {
+          "id": "m-cab",
+          "name": "Milanesa a Caballo",
+          "price": 10000,
+          "desc": "Milanesa de carne de ternera dorada y crujiente al plato, coronada con dos huevos fritos a caballo. Acompañada con guarnición de papas fritas.",
+          "img": "assets/milanesa_profesional.png",
+          "ingredients": [
+            "Milanesa ternera al plato",
+            "2 Huevos fritos",
+            "Papas fritas doradas"
+          ]
+        }
+      ]
+    },
+    {
+      "key": "papas",
+      "navLabel": "Papas Fritas",
+      "title": "Cajas de Papas Fritas",
+      "subtitle": "Crujientes, Doradas",
+      "customizable": false,
+      "items": [
+        {
+          "id": "p-trad",
+          "name": "Porción Tradicional",
+          "price": 4000,
+          "desc": "Papas bastón cortadas y fritas en el momento, doraditas y crocantes con sal fina.",
+          "img": "assets/papas_profesional.png",
+          "ingredients": [
+            "Papas bastón naturales",
+            "Fritas al momento",
+            "Sal fina"
+          ]
+        },
+        {
+          "id": "p-grat",
+          "name": "Porción Gratinada",
+          "price": 7000,
+          "desc": "Papas fritas crocantes bañadas en salsa cheddar caliente derretida, lluvia de panceta crocante y ciboulette/verdeo fresco picado.",
+          "img": "assets/papas_profesional.png",
+          "ingredients": [
+            "Papas bastón crocantes",
+            "Salsa cheddar caliente",
+            "Panceta crocante",
+            "Verdeo fresco"
+          ]
+        }
+      ]
+    },
+    {
+      "key": "bebidas",
+      "navLabel": "Bebidas",
+      "title": "Bebidas",
+      "subtitle": "Bien frías",
+      "customizable": false,
+      "items": [
+        {
+          "id": "b-coca",
+          "name": "Coca Cola 1L",
+          "price": 3000,
+          "desc": "Gaseosa Coca-Cola sabor original 1 Litro, bien fría en botella de vidrio o plástico según disponibilidad.",
+          "img": "assets/coca_cola_profesional.png",
+          "ingredients": [
+            "Gaseosa 1 Litro",
+            "Sabor original",
+            "Bien fría"
+          ]
+        }
+      ]
+    }
+  ]
+}

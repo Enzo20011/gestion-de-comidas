@@ -1,0 +1,247 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Menú</title>
+<meta property="og:title" content="Menú">
+<meta property="og:description" content="¡Hacé tu pedido online!">
+<meta property="og:image" content="logo.svg">
+<link rel="icon" href="logo.svg" type="image/svg+xml">
+<link rel="manifest" href="manifest.json">
+<meta name="theme-color" content="#e11d48">
+<link href="https://fonts.googleapis.com/css2?family=Anton&family=Outfit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+<!-- HEADER -->
+<header class="header">
+  <div class="header-inner">
+    <div class="header-top">
+      <div class="logo-svg-wrap">
+        <img class="logo-emblem" src="logo.svg" id="logoImg" alt="Logo">
+      </div>
+
+      <!-- Toggle visible solo en tablet/desktop desde el header -->
+      <div class="header-center">
+        <div class="delivery-toggle">
+          <button class="toggle-btn active" id="btn-retiro-h" onclick="setMode('retiro')"><svg class="toggle-icon" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 2 3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4Z"/><path d="M3 6h18"/><path d="M16 10a4 4 0 0 1-8 0"/></svg>Retiro en local</button>
+          <button class="toggle-btn" id="btn-delivery-h" onclick="setMode('delivery')"><svg class="toggle-icon" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="1" y="3" width="15" height="13"/><path d="M16 8h4l3 3v5h-7V8Z"/><circle cx="5.5" cy="18.5" r="2.5"/><circle cx="18.5" cy="18.5" r="2.5"/></svg>Delivery</button>
+        </div>
+      </div>
+
+      <div class="header-right">
+        <div>
+          <div class="open-badge" id="openBadge"><div class="dot-green"></div><span id="openText">Abierto</span></div>
+          <div class="schedule-note" id="scheduleNote"></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Categorías (mobile + tablet, no desktop que usa sidebar) -->
+    <div class="header-bottom">
+      <div class="mobile-toggle">
+        <div class="delivery-toggle">
+          <button class="toggle-btn active" id="btn-retiro-m" onclick="setMode('retiro')"><svg class="toggle-icon" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 2 3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4Z"/><path d="M3 6h18"/><path d="M16 10a4 4 0 0 1-8 0"/></svg>Retiro en local</button>
+          <button class="toggle-btn" id="btn-delivery-m" onclick="setMode('delivery')"><svg class="toggle-icon" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="1" y="3" width="15" height="13"/><path d="M16 8h4l3 3v5h-7V8Z"/><circle cx="5.5" cy="18.5" r="2.5"/><circle cx="18.5" cy="18.5" r="2.5"/></svg>Delivery</button>
+        </div>
+      </div>
+      <div class="search-wrap">
+        <input type="search" id="searchInput" class="search-input" placeholder="🔍 Buscar hamburguesas, combos, bebidas...">
+        <button class="search-clear-btn" id="searchClearBtn" hidden type="button" aria-label="Limpiar búsqueda">✕</button>
+      </div>
+      <div class="cats" id="catsMobile"></div>
+    </div>
+  </div>
+</header>
+
+<div class="info-ribbon">
+  <div class="info-ribbon-inner">
+    <span>🛵 Envíos sin demora</span>
+    <span class="ribbon-dot">·</span>
+    <span>⏱️ 30 a 45 min aprox</span>
+    <span class="ribbon-dot">·</span>
+    <span>💳 Efectivo, Transferencia o MP</span>
+  </div>
+</div>
+
+<div class="closed-banner" id="closedBanner" hidden>
+  Estamos cerrados en este momento. Podés armar tu pedido, pero no se puede confirmar hasta que abramos.
+</div>
+
+
+<!-- PAGE LAYOUT -->
+<div class="page-layout">
+
+  <!-- SIDEBAR (solo desktop) -->
+  <aside class="sidebar">
+    <div class="sidebar-toggle">
+      <div class="delivery-toggle" style="flex-direction:column">
+        <button class="toggle-btn active" id="btn-retiro-s" onclick="setMode('retiro')" style="justify-content:flex-start"><svg class="toggle-icon" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 2 3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4Z"/><path d="M3 6h18"/><path d="M16 10a4 4 0 0 1-8 0"/></svg>Retiro en local</button>
+        <button class="toggle-btn" id="btn-delivery-s" onclick="setMode('delivery')" style="justify-content:flex-start"><svg class="toggle-icon" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="1" y="3" width="15" height="13"/><path d="M16 8h4l3 3v5h-7V8Z"/><circle cx="5.5" cy="18.5" r="2.5"/><circle cx="18.5" cy="18.5" r="2.5"/></svg>Delivery</button>
+      </div>
+    </div>
+
+    <div class="sidebar-title">Menú</div>
+    <nav class="sidebar-nav" id="sidebarNav"></nav>
+
+    <hr class="sidebar-divider">
+
+    <div class="sidebar-info" id="sidebarInfo"></div>
+  </aside>
+
+  <!-- MAIN -->
+  <main class="main-content" id="mainContent">
+    <div id="menuLoading">
+      <div class="skeleton-row">
+        <div class="skeleton-pill"></div>
+        <div class="skeleton-pill"></div>
+        <div class="skeleton-pill"></div>
+      </div>
+      <div class="skeleton-card"><div class="skeleton-img"></div><div class="skeleton-lines"><div class="skeleton-line w60"></div><div class="skeleton-line w90"></div><div class="skeleton-line w30"></div></div></div>
+      <div class="skeleton-card"><div class="skeleton-img"></div><div class="skeleton-lines"><div class="skeleton-line w60"></div><div class="skeleton-line w90"></div><div class="skeleton-line w30"></div></div></div>
+      <div class="skeleton-card"><div class="skeleton-img"></div><div class="skeleton-lines"><div class="skeleton-line w60"></div><div class="skeleton-line w90"></div><div class="skeleton-line w30"></div></div></div>
+    </div>
+  </main>
+</div>
+
+<footer class="site-footer">
+  <img class="footer-logo" src="logo.svg" alt="" id="footerLogo">
+  <div class="footer-name" id="footerName"></div>
+  <div class="footer-note">Pedidos online · Retiro en local y delivery</div>
+</footer>
+
+<!-- CART BAR -->
+<div class="cart-bar gone" id="cartBar" onclick="openOrder()">
+  <div class="cb-left">
+    <div class="cb-count" id="cartCount">0</div>
+    <div class="cb-label">Ver pedido</div>
+  </div>
+  <div class="cb-total" id="cartTotal">$0</div>
+</div>
+
+<!-- MODAL PERSONALIZACIÓN -->
+<div class="custom-modal-overlay" id="cmOverlay" onclick="closeCM(event)">
+  <div class="custom-modal">
+    <div class="cm-handle"></div>
+    <button class="cm-close" aria-label="Cerrar" onclick="closeCMBtn()">✕</button>
+
+    <div class="cm-product-row">
+      <img id="cm-pimg" class="cm-pimg" src="" alt="Producto">
+      <div style="flex:1; min-width:0;">
+        <div class="cm-pname" id="cm-pname">Producto</div>
+        <div class="cm-pprice" id="cm-pprice">$0</div>
+      </div>
+    </div>
+
+    <div class="cm-ingredients-box" id="cm-ingredients-box">
+      <div class="cm-ingredients-title">
+        <span>🥩 ¿Qué incluye este producto?</span>
+      </div>
+      <div class="cm-ingredients-tags" id="cm-ingredients-tags"></div>
+      <div class="cm-pdesc" id="cm-pdesc"></div>
+    </div>
+
+    <div class="cm-section" id="cm-coccion-section">
+      <div class="cm-label">Cocción de la carne</div>
+      <div class="cm-options" id="cm-coccion"></div>
+    </div>
+
+    <div class="cm-section" id="cm-removables-section">
+      <div class="cm-label">Sacar ingredientes</div>
+      <div class="cm-options" id="cm-removables"></div>
+    </div>
+
+    <div id="cm-extra-groups"></div>
+
+    <div class="cm-section">
+      <div class="cm-label">Algo más? (opcional)</div>
+      <textarea class="cm-comment" id="cm-comment" maxlength="150" placeholder="Ej: bien cocida, sin sal..."></textarea>
+    </div>
+
+    <div class="cm-footer">
+      <div class="qty-stepper">
+        <button type="button" aria-label="Restar cantidad" onclick="changeCmQty(-1)">−</button>
+        <span id="cmQtyValue">1</span>
+        <button type="button" aria-label="Sumar cantidad" onclick="changeCmQty(1)">+</button>
+      </div>
+      <button class="cm-add-main" onclick="confirmCustom()">Agregar al pedido</button>
+    </div>
+  </div>
+</div>
+
+<!-- ORDER MODAL -->
+<div class="order-overlay" id="orderOverlay" onclick="closeOrder(event)">
+  <div class="order-modal">
+    <div class="om-handle"></div>
+    <div class="om-header">
+      <div class="om-title">Tu Pedido</div>
+      <div class="om-header-actions">
+        <button class="om-clear" onclick="clearCart()" aria-label="Vaciar pedido">Vaciar</button>
+        <button class="om-close" onclick="closeOrderBtn()" aria-label="Cerrar">✕</button>
+      </div>
+    </div>
+
+    <div class="om-items" id="omItems"></div>
+
+    <div class="om-upsell" id="omUpsell"></div>
+
+    <div class="checkout-fields">
+      <div class="delivery-input-wrap show" style="margin-bottom: 12px;">
+        <label>Tu Nombre o Apodo</label>
+        <input class="delivery-input" id="nameInput" type="text" placeholder="Ej: Fede" maxlength="60">
+      </div>
+      <div class="delivery-input-wrap show" style="margin-bottom: 12px;">
+        <label>Tu Teléfono (Para notificaciones de WhatsApp)</label>
+        <input class="delivery-input" id="phoneInput" type="text" placeholder="Ej: 341 555 1234" maxlength="20">
+      </div>
+
+      <div class="delivery-input-wrap" id="delInputWrap" style="margin-bottom: 12px;">
+        <label>Dirección de entrega</label>
+        <input class="delivery-input" id="delInput" type="text" placeholder="Ej: Av. Principal 1234, Centro" maxlength="200" autocomplete="street-address">
+      </div>
+
+      <div class="delivery-input-wrap show" style="margin-bottom: 12px;">
+        <label>Método de Pago</label>
+        <select class="delivery-input" id="payInput" onchange="toggleCash()">
+          <option value="transferencia">Transferencia / MercadoPago</option>
+          <option value="efectivo">Efectivo</option>
+        </select>
+      </div>
+
+      <div class="delivery-input-wrap" id="cashInputWrap" style="display:none; margin-bottom: 12px;">
+        <label>¿Con cuánto abonás?</label>
+        <input class="delivery-input" id="cashInput" type="text" placeholder="Ej: Pago con $10.000" maxlength="100">
+      </div>
+    </div>
+
+    <div class="om-error" id="omError" hidden></div>
+    <div class="om-closed-notice" id="omClosedNotice" hidden>Estamos cerrados en este momento. Podés armar tu pedido, pero no se puede confirmar hasta que abramos.</div>
+
+    <div class="om-total">
+      <span class="om-total-lbl">Total</span>
+      <span class="om-total-amt" id="omTotal">$0</span>
+    </div>
+
+    <button class="wsp-btn" id="wspBtn" onclick="sendWsp()">
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="white"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z"/></svg>
+      <span id="wspBtnLabel">Confirmar pedido por WhatsApp</span>
+    </button>
+  </div>
+</div>
+
+<div class="btn-top" id="btnTop" role="button" aria-label="Volver arriba" onclick="window.scrollTo({top:0, behavior:'smooth'})">↑</div>
+
+<script src="script.js"></script>
+<script>
+  if ('serviceWorker' in navigator) {
+    window.addEventListener('load', () => {
+      navigator.serviceWorker.register('/sw.js').catch(error => {
+        console.error('ServiceWorker registration failed: ', error);
+      });
+    });
+  }
+</script>
+</body>
+</html>

@@ -1,0 +1,229 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Panel de administración</title>
+<link rel="icon" href="logo.svg" type="image/svg+xml">
+<link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="admin.css">
+</head>
+<body>
+
+<!-- LOGIN -->
+<div class="login-screen" id="loginScreen">
+  <div class="login-card">
+    <img class="login-emblem" src="logo.svg" alt="">
+    <h1>Panel de administración</h1>
+    <div class="login-sub">Ingresá para gestionar pedidos y menú</div>
+    <div class="login-error" id="loginError" hidden></div>
+    <form id="loginForm">
+      <div class="field">
+        <label>Usuario</label>
+        <input id="loginUser" autocomplete="username" autocapitalize="off">
+      </div>
+      <div class="field">
+        <label>Contraseña</label>
+        <input id="loginPass" type="password" autocomplete="current-password">
+      </div>
+      <button class="primary" id="loginBtn" type="submit">Ingresar</button>
+    </form>
+  </div>
+</div>
+
+<!-- APP -->
+<div class="app-shell" id="appShell" hidden>
+  <div class="admin-header">
+    <div class="admin-header-title">
+      <img class="admin-logo" src="logo.svg" alt="">
+      <div>
+        <h1>Panel de administración</h1>
+        <div class="sub">Pedidos, menú y estadísticas</div>
+      </div>
+    </div>
+    <div class="admin-header-actions">
+      <button class="sound-btn" id="soundToggleBtn" title="Activar o silenciar sonido de pedidos">🔔 Sonido</button>
+      <button class="notif-btn" id="notifBtn" hidden>Activar avisos</button>
+      <button class="secondary" id="wspAdminBtn">WhatsApp</button>
+      <button class="logout-btn" id="logoutBtn">Salir</button>
+    </div>
+  </div>
+
+  <div class="tabs">
+    <button class="tab-btn active" data-tab="dashboard">Dashboard</button>
+    <button class="tab-btn" data-tab="orders">Pedidos <span class="tab-badge" id="ordersBadge" hidden>0</span></button>
+    <button class="tab-btn" data-tab="menu">Menú</button>
+  </div>
+
+  <!-- DASHBOARD -->
+  <div id="dashboardTab">
+    <div class="kpi-row" id="kpiRow"></div>
+    <div class="chart-card" style="position:relative;">
+      <div class="chart-card-head">
+        <div class="chart-title">Ingresos por día</div>
+        <div class="range-toggle" id="rangeToggle">
+          <button data-range="7">7 días</button>
+          <button data-range="14" class="active">14 días</button>
+          <button data-range="30">30 días</button>
+        </div>
+      </div>
+      <div id="revenueChart"></div>
+      <div class="chart-tooltip" id="chartTooltip"></div>
+    </div>
+  </div>
+
+  <!-- PEDIDOS -->
+  <div id="ordersTab" hidden>
+    <div class="toolbar">
+      <button id="refreshOrdersBtn">↻ Actualizar</button>
+      <select id="statusFilter">
+        <option value="">Todos los estados</option>
+        <option value="nuevo">Nuevo</option>
+        <option value="en preparación">En preparación</option>
+        <option value="listo">Listo</option>
+        <option value="entregado">Entregado</option>
+      </select>
+      <span class="sub" id="countLabel" style="margin:0;"></span>
+    </div>
+    <div id="ordersList"></div>
+  </div>
+
+  <!-- MENÚ -->
+  <div id="menuTab" hidden>
+    <div class="toolbar">
+      <button id="refreshMenuBtn">↻ Actualizar</button>
+      <button class="primary" id="newCategoryBtn">+ Nueva categoría</button>
+      <input type="search" id="adminMenuSearch" class="admin-search-input" placeholder="🔍 Buscar producto en el menú...">
+    </div>
+    <div id="categoriesList"></div>
+  </div>
+
+  <!-- NAVEGACIÓN MÓVIL INFERIOR -->
+  <nav class="mobile-admin-bar" id="mobileAdminBar">
+    <button class="m-bar-btn active" data-tab="dashboard">
+      <span class="m-bar-icon">📊</span>
+      <span>Dashboard</span>
+    </button>
+    <button class="m-bar-btn" data-tab="orders">
+      <span class="m-bar-icon">📦<span class="m-bar-badge" id="mOrdersBadge" hidden>0</span></span>
+      <span>Pedidos</span>
+    </button>
+    <button class="m-bar-btn" data-tab="menu">
+      <span class="m-bar-icon">🍔</span>
+      <span>Menú</span>
+    </button>
+  </nav>
+</div>
+
+
+<!-- MODAL CATEGORÍA -->
+<div class="modal-overlay" id="categoryModalOverlay" hidden>
+  <div class="modal">
+    <h3 id="categoryModalTitle">Nueva categoría</h3>
+    <div class="modal-error" id="categoryModalError"></div>
+    <div class="field">
+      <label>Nombre (aparece en el menú)</label>
+      <input id="catNavLabel" maxlength="40" placeholder="Ej: Postres">
+    </div>
+    <div class="field">
+      <label>Subtítulo</label>
+      <input id="catSubtitle" maxlength="80" placeholder="Ej: Para el final">
+    </div>
+    <div class="checkbox-row">
+      <input type="checkbox" id="catCustomizable">
+      <label for="catCustomizable" style="margin:0;text-transform:none;font-weight:500;color:var(--white);">Los productos se pueden personalizar (cocción, extras, etc.)</label>
+    </div>
+    <div class="modal-actions">
+      <button id="categoryDeleteBtn" class="danger" hidden>Eliminar</button>
+      <button id="categoryCancelBtn">Cancelar</button>
+      <button class="primary" id="categorySaveBtn">Guardar</button>
+    </div>
+  </div>
+</div>
+
+<!-- MODAL PRODUCTO -->
+<div class="modal-overlay" id="itemModalOverlay" hidden>
+  <div class="modal modal-xl">
+    <h3 id="itemModalTitle">Nuevo producto</h3>
+    <div class="modal-error" id="itemModalError"></div>
+    <div class="modal-grid">
+      <div class="modal-col">
+        <div class="field">
+          <label>Imagen del Producto</label>
+          <div class="img-preview large-preview">
+            <img id="itemImgPreview" src="" alt="Vista previa">
+            <input type="file" id="itemImgUpload" accept="image/png,image/jpeg,image/webp,image/gif" title="Subir imagen">
+            <div class="img-upload-hint">Subir nueva foto</div>
+          </div>
+          <select id="itemImgSelect" style="margin-top:8px;"></select>
+        </div>
+      </div>
+      <div class="modal-col">
+        <div class="field">
+          <label>Categoría</label>
+          <select id="itemCatInput"></select>
+        </div>
+        <div class="field">
+          <label>Nombre</label>
+          <input id="itemName" maxlength="60" placeholder="Ej: Sprite 1.5L">
+        </div>
+        <div class="modal-row" style="display: flex; gap: 12px;">
+          <div class="field" style="flex:1;">
+            <label>Precio</label>
+            <input id="itemPrice" type="number" min="0" step="1" placeholder="3500">
+          </div>
+          <div class="field" style="flex:1;">
+            <label>Stock (Opc.)</label>
+            <input id="itemStock" type="number" min="0" step="1" placeholder="Infinito">
+          </div>
+        </div>
+        <div class="field">
+          <label style="display:flex; justify-content:space-between;">
+            Etiquetas / Ingredientes clave
+            <span style="opacity:0.6; font-size:11px; font-weight:normal;">Separar con coma (Ej: Carne 110g, Cheddar)</span>
+          </label>
+          <input id="itemIngredients" placeholder="Ej: Medallón de carne 110g, Queso cheddar, Bacon">
+        </div>
+        <div class="field">
+          <label style="display:flex; justify-content:space-between;">
+            Descripción detallada
+            <span style="opacity:0.6; font-size:12px; font-weight:normal;" id="descCharCount">0/500</span>
+          </label>
+          <textarea id="itemDesc" maxlength="500" placeholder="Ej: Exquisito medallón de carne, queso..." style="height:90px;"></textarea>
+        </div>
+      </div>
+    </div>
+    <div class="modal-actions" style="margin-top: 16px;">
+      <button id="itemDeleteBtn" class="danger" hidden>Eliminar</button>
+      <button id="itemCancelBtn">Cancelar</button>
+      <button class="primary" id="itemSaveBtn">Guardar</button>
+    </div>
+  </div>
+</div>
+
+<div class="modal-overlay" id="dayOrdersModalOverlay" hidden>
+  <div class="modal" style="max-width: 600px;">
+    <h3 id="dayOrdersModalTitle">Pedidos del Día</h3>
+    <div id="dayOrdersList" style="margin-top: 16px;"></div>
+    <div class="modal-actions">
+      <button id="dayOrdersCloseBtn" class="primary">Cerrar</button>
+    </div>
+  </div>
+</div>
+
+<div class="modal-overlay" id="wspModalOverlay" hidden>
+  <div class="modal" style="text-align: center; max-width: 400px;">
+    <h3>Estado de WhatsApp</h3>
+    <div id="wspStatusText" style="margin: 16px 0; font-weight: 500;">Cargando...</div>
+    <img id="wspQrImage" src="" alt="Código QR" style="max-width: 100%; display: none; margin: 0 auto;">
+    <div class="modal-actions" style="margin-top: 24px; justify-content: center;">
+      <button id="wspCloseBtn" class="primary">Cerrar</button>
+    </div>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script src="admin.js"></script>
+</body>
+</html>

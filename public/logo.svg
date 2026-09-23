@@ -1,0 +1,7 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 200">
+  <circle cx="100" cy="100" r="92" fill="#1a1a1a" stroke="#ffffff" stroke-width="5"/>
+  <circle cx="100" cy="100" r="80" fill="none" stroke="#ffffff" stroke-width="1.5" opacity="0.5"/>
+  <text x="100" y="92" font-family="'Segoe UI Emoji','Apple Color Emoji',sans-serif" font-size="56" text-anchor="middle">🍔</text>
+  <text x="100" y="132" font-family="Arial, sans-serif" font-size="19" font-weight="700" letter-spacing="1" fill="#ffffff" text-anchor="middle">SABOR URBANO</text>
+  <text x="100" y="150" font-family="Arial, sans-serif" font-size="10.5" letter-spacing="1.5" fill="#cccccc" text-anchor="middle">RICO Y RAPIDO</text>
+</svg>

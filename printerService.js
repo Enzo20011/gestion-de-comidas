@@ -4,14 +4,23 @@ const path = require('node:path');
 const PRINTS_DIR = process.env.VERCEL
   ? path.join('/tmp', 'mia-prints')
   : path.join(__dirname, 'data', 'prints');
-if (!fs.existsSync(PRINTS_DIR)) {
-  fs.mkdirSync(PRINTS_DIR, { recursive: true });
+
+// Generar el ticket es un efecto secundario no crítico (queda como referencia
+// para cocina); si falla por lo que sea (carpeta borrada, disco lleno, etc.)
+// no tiene que tirar abajo el pedido, que para ese punto ya se guardó en la base.
+function printTicket(order) {
+  try {
+    writeTicketFile(order);
+  } catch (err) {
+    console.error(`[Impresora] No se pudo generar el ticket del pedido ${order.id.slice(0, 8)}:`, err.message);
+  }
 }
 
-function printTicket(order) {
+function writeTicketFile(order) {
   // Cuando tengas la impresora física, conectaremos node-thermal-printer aquí.
   // Por ahora, generamos un archivo de texto con el ticket simulando la impresión.
-  
+  fs.mkdirSync(PRINTS_DIR, { recursive: true });
+
   const date = new Date(order.createdAt).toLocaleString('es-AR', { timeZone: 'America/Argentina/Buenos_Aires' });
   let ticket = `=================================\n`;
   ticket += `   MÍA HAMBURGUESERÍA & CERVECERÍA\n`;

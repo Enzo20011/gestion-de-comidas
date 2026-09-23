@@ -375,14 +375,19 @@ function switchCat(cat, btn) {
 
 // ── carrito ──────────────────────────────────────────────
 
+function contentsLabel(item) {
+  return item && item.ingredients && item.ingredients.length ? 'Trae: ' + item.ingredients.join(', ') : '';
+}
+
 function quickAdd(id, e) {
   if (e && e.stopPropagation) e.stopPropagation();
   const item = catalog.get(id);
-  const existing = cart.find(i => i.productId === id && !i.custom);
+  const custom = contentsLabel(item);
+  const existing = cart.find(i => i.productId === id && i.custom === custom);
   if (existing) {
     existing.qty += 1;
   } else {
-    cart.push({ id: id + '_' + Date.now(), productId: id, name: item.name, price: item.price, qty: 1, custom: '' });
+    cart.push({ id: id + '_' + Date.now(), productId: id, name: item.name, price: item.price, qty: 1, custom });
   }
   updateBar();
   flashBtn(e && e.target);
@@ -493,6 +498,8 @@ function confirmCustom() {
   const comment = document.getElementById('cm-comment').value.trim();
 
   const customParts = [];
+  const contents = contentsLabel(currentProduct);
+  if (contents) customParts.push(contents);
   if (cocText && cocText !== MENU.customizationOptions.coccion[0]) customParts.push(cocText);
   if (rems.length) customParts.push(rems.join(', '));
   if (extras.length) customParts.push(extras.join(', '));
@@ -533,11 +540,20 @@ function updateBar() {
   const bar = document.getElementById('cartBar');
   bar.classList.toggle('gone', cart.length === 0);
 
+  const headerCount = document.getElementById('headerCartCount');
+  headerCount.textContent = count;
+  headerCount.hidden = count === 0;
+
   if (cart.length > 0) {
     bar.classList.remove('bounce');
     void bar.offsetWidth;
     bar.classList.add('bounce');
     try { navigator.vibrate?.(15); } catch {}
+
+    const headerBtn = document.getElementById('headerCartBtn');
+    headerBtn.classList.remove('bounce');
+    void headerBtn.offsetWidth;
+    headerBtn.classList.add('bounce');
   }
 
   updateCardBadges();
@@ -721,9 +737,13 @@ async function sendWsp() {
 
   const wspBtn = document.getElementById('wspBtn');
   const wspLabel = document.getElementById('wspBtnLabel');
+  const wspSpinner = document.getElementById('wspSpinner');
+  const wspIcon = document.getElementById('wspIcon');
   wspBtn.disabled = true;
   const origLabel = wspLabel.textContent;
   wspLabel.textContent = 'Enviando...';
+  wspSpinner.hidden = false;
+  wspIcon.hidden = true;
   showOrderError('');
 
   let orderId = null;
@@ -743,6 +763,8 @@ async function sendWsp() {
     showOrderError(e.message || 'No se pudo registrar el pedido. Probá de nuevo.');
     wspBtn.disabled = false;
     wspLabel.textContent = origLabel;
+    wspSpinner.hidden = true;
+    wspIcon.hidden = false;
     return;
   }
 
@@ -780,6 +802,8 @@ async function sendWsp() {
 
   wspBtn.disabled = false;
   wspLabel.textContent = origLabel;
+  wspSpinner.hidden = true;
+  wspIcon.hidden = false;
   cart = [];
   updateBar();
   document.getElementById('orderOverlay').classList.remove('open');

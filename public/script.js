@@ -38,13 +38,30 @@ async function init() {
     const btn = document.getElementById('btnTop');
     if (window.scrollY > 300) btn.classList.add('show');
     else btn.classList.remove('show');
-  });
+  }, { passive: true });
 
   document.addEventListener('keydown', (e) => {
     if (e.key !== 'Escape') return;
     if (document.getElementById('cmOverlay').classList.contains('open')) closeCMBtn();
     else if (document.getElementById('orderOverlay').classList.contains('open')) closeOrderBtn();
   });
+
+  setupModalScrollLock();
+
+  // Precalentar el modal de "Ver pedido": la primera vez que se abre es más
+  // lenta que las siguientes, porque ahí es cuando el navegador decodifica
+  // por primera vez las fotos de "Completá tu pedido". Las precargamos en
+  // segundo plano, con la página ya quieta, para que cuando el cliente
+  // abra el carrito de verdad esas fotos ya estén listas.
+  const warmUpImages = () => {
+    try {
+      [...catalog.values()].slice(0, 10).forEach(item => {
+        if (item.img) { const im = new Image(); im.src = item.img; }
+      });
+    } catch {}
+  };
+  if ('requestIdleCallback' in window) requestIdleCallback(warmUpImages, { timeout: 2000 });
+  else setTimeout(warmUpImages, 1200);
 }
 
 function buildCatalog() {
@@ -280,9 +297,19 @@ function initSearch() {
     });
   }
 
+  let searchDebounceTimer = null;
   input.addEventListener('input', (e) => {
     const val = e.target.value;
     if (clearBtn) clearBtn.hidden = !val.trim();
+
+    // El filtro recorre todo el catálogo: con debounce evitamos hacerlo en
+    // cada letra tipeada (sentía lag al escribir rápido), solo cuando hay
+    // una pausa breve.
+    clearTimeout(searchDebounceTimer);
+    searchDebounceTimer = setTimeout(() => runSearch(val), 120);
+  });
+
+  function runSearch(val) {
     const q = normalizeSearch(val);
     if (!q) {
       clearSearch();
@@ -318,11 +345,11 @@ function initSearch() {
         noResults.className = 'empty-category';
         document.getElementById('mainContent').appendChild(noResults);
       }
-      noResults.textContent = `No encontramos productos para "${e.target.value.trim()}".`;
+      noResults.textContent = `No encontramos productos para "${val.trim()}".`;
     } else if (noResults) {
       noResults.remove();
     }
-  });
+  }
 }
 
 function clearSearch() {
@@ -374,6 +401,26 @@ function switchCat(cat, btn) {
 }
 
 // ── carrito ──────────────────────────────────────────────
+
+// Con un modal abierto, scrollear adentro (el detalle de un producto, el
+// pedido) no tiene que mover la página de fondo detrás — antes no había
+// nada que lo evitara. Se observan los tres overlays y, mientras cualquiera
+// esté abierto, se bloquea el scroll del body.
+function setupModalScrollLock() {
+  const overlays = ['cmOverlay', 'orderOverlay', 'confirmOverlay']
+    .map(id => document.getElementById(id))
+    .filter(Boolean);
+
+  const update = () => {
+    const anyOpen = overlays.some(el => el.classList.contains('open'));
+    document.body.classList.toggle('modal-open', anyOpen);
+  };
+
+  overlays.forEach(el => {
+    new MutationObserver(update).observe(el, { attributes: true, attributeFilter: ['class'] });
+  });
+  update();
+}
 
 function contentsLabel(item) {
   return item && item.ingredients && item.ingredients.length ? 'Trae: ' + item.ingredients.join(', ') : '';
@@ -519,17 +566,28 @@ function confirmCustom() {
   if (reopenOrderAfterCustom) { reopenOrderAfterCustom = false; openOrder(); }
 }
 
+let lastBadgedIds = new Set();
+
 function updateCardBadges() {
+  // El catálogo tiene ~90 productos: en vez de recorrerlos todos en cada
+  // click del carrito, solo tocamos los que tienen cantidad ahora o la
+  // tenían antes (son unos pocos, no todo el catálogo).
   const counts = {};
   cart.forEach(i => { counts[i.productId] = (counts[i.productId] || 0) + i.qty; });
-  document.querySelectorAll('[data-item-badge]').forEach(el => {
-    const id = el.dataset.itemBadge;
+
+  const idsToUpdate = new Set([...lastBadgedIds, ...Object.keys(counts)]);
+  idsToUpdate.forEach(id => {
     const count = counts[id] || 0;
-    el.textContent = count;
-    el.style.display = count > 0 ? 'flex' : 'none';
+    const el = document.querySelector(`[data-item-badge="${id}"]`);
+    if (el) {
+      el.textContent = count;
+      el.style.display = count > 0 ? 'flex' : 'none';
+    }
     const card = document.getElementById('pcard-' + id);
     if (card) card.classList.toggle('has-in-cart', count > 0);
   });
+
+  lastBadgedIds = new Set(Object.keys(counts));
 }
 
 function updateBar() {
@@ -578,9 +636,33 @@ function changeQty(cartId, delta) {
   openOrder();
 }
 
-function clearCart() {
+function askConfirm(message, okLabel) {
+  return new Promise(resolve => {
+    const overlay = document.getElementById('confirmOverlay');
+    document.getElementById('confirmTitle').textContent = message;
+    const okBtn = document.getElementById('confirmOkBtn');
+    const cancelBtn = document.getElementById('confirmCancelBtn');
+    okBtn.textContent = okLabel || 'Confirmar';
+
+    function cleanup(result) {
+      overlay.classList.remove('open');
+      okBtn.removeEventListener('click', onOk);
+      cancelBtn.removeEventListener('click', onCancel);
+      resolve(result);
+    }
+    function onOk() { cleanup(true); }
+    function onCancel() { cleanup(false); }
+
+    okBtn.addEventListener('click', onOk);
+    cancelBtn.addEventListener('click', onCancel);
+    overlay.classList.add('open');
+  });
+}
+
+async function clearCart() {
   if (cart.length === 0) return;
-  if (!confirm('¿Vaciar todo el pedido?')) return;
+  const ok = await askConfirm('¿Vaciar todo el pedido?', 'Sí, vaciar');
+  if (!ok) return;
   cart = [];
   updateBar();
   closeOrderBtn();
@@ -635,8 +717,12 @@ function openOrder() {
   } catch {}
 
   document.getElementById('wspBtn').disabled = !MENU.brand.isOpen;
-  renderUpsell();
   document.getElementById('orderOverlay').classList.add('open');
+
+  // Los sugeridos recorren todo el catálogo para armar la lista: se difieren
+  // un par de frames para que no compitan con la animación de apertura del
+  // modal (evita el lag/stutter al entrar, sobre todo en celulares).
+  requestAnimationFrame(() => requestAnimationFrame(renderUpsell));
 }
 
 function renderUpsell() {

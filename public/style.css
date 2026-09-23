@@ -34,6 +34,19 @@
     overflow-x: hidden;
   }
 
+  /* Con un modal abierto (producto, pedido o confirmación), la página de
+     fondo no tiene que scrollear — sin esto, mover el dedo dentro del
+     modal en mobile arrastraba también el contenido de atrás. */
+  body.modal-open {
+    overflow: hidden;
+    touch-action: none;
+  }
+  body.modal-open .custom-modal,
+  body.modal-open .order-modal,
+  body.modal-open .confirm-modal {
+    touch-action: pan-y;
+  }
+
   /* ── HEADER ── */
   .header {
     background: var(--glass);
@@ -942,8 +955,10 @@
     max-width: 480px;
     max-height: 90vh;
     overflow-y: auto;
+    overscroll-behavior-y: contain;
     transform: scale(0.95) translateY(10px);
     transition: transform 0.3s cubic-bezier(0.34,1.2,0.64,1);
+    will-change: transform;
   }
 
   .custom-modal-overlay.open .custom-modal {
@@ -1261,6 +1276,68 @@
     .order-toast { top: 20px; }
   }
 
+  /* ── CONFIRMACION GENERICA ── */
+  .confirm-overlay {
+    position: fixed; inset: 0;
+    background: rgba(0,0,0,0.85);
+    z-index: 500;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    opacity: 0; pointer-events: none;
+    transition: opacity 0.2s;
+    backdrop-filter: blur(4px);
+    padding: 20px;
+  }
+  .confirm-overlay.open { opacity: 1; pointer-events: all; }
+
+  .confirm-modal {
+    width: 100%;
+    max-width: 340px;
+    background: var(--dark);
+    border: 1px solid var(--border-hover);
+    border-radius: 18px;
+    padding: 22px 20px 18px;
+    box-shadow: 0 20px 60px rgba(0,0,0,0.5);
+    transform: scale(0.94) translateY(6px);
+    transition: transform 0.2s;
+  }
+  .confirm-overlay.open .confirm-modal { transform: scale(1) translateY(0); }
+
+  .confirm-title {
+    font-size: 15px;
+    font-weight: 600;
+    color: var(--white);
+    line-height: 1.5;
+    text-align: center;
+    margin-bottom: 18px;
+  }
+
+  .confirm-actions { display: flex; gap: 10px; }
+  .confirm-btn {
+    flex: 1;
+    padding: 12px;
+    border-radius: 11px;
+    font-family: 'Outfit', sans-serif;
+    font-size: 14px;
+    font-weight: 700;
+    cursor: pointer;
+    transition: opacity 0.15s, transform 0.15s;
+  }
+  .confirm-btn:active { transform: scale(0.96); }
+  .confirm-cancel {
+    background: var(--card2);
+    border: 1px solid var(--border-hover);
+    color: var(--cream);
+  }
+  .confirm-cancel:hover { background: var(--card); }
+  .confirm-ok {
+    background: var(--red);
+    border: none;
+    color: white;
+  }
+  .confirm-ok:hover { opacity: 0.9; }
+
   /* ── ORDER MODAL ── */
   .order-overlay {
     position: fixed; inset: 0;
@@ -1288,8 +1365,10 @@
     max-width: 520px;
     max-height: 90vh;
     overflow-y: auto;
+    overscroll-behavior-y: contain;
     transform: scale(0.95) translateY(10px);
     transition: transform 0.3s cubic-bezier(0.34,1.2,0.64,1);
+    will-change: transform;
   }
 
   .order-overlay.open .order-modal {
@@ -1521,6 +1600,21 @@
 
 /* ── BOTTOM SHEET (MOBILE) ── */
 @media (max-width: 767px) {
+  /* El desenfoque de fondo (backdrop-filter) es carísimo para el GPU de un
+     celular: no es solo el de los modales, sino que el header fijo, cada
+     tarjeta de producto y la barra del carrito también lo usan y siguen
+     "prendidos" (recalculándose) detrás mientras el modal se anima encima
+     — eso es el lag/bug real al abrir "Ver pedido" o el modal de un
+     producto. En mobile sacamos el blur de todos y compensamos con un
+     fondo un poco más opaco donde hacía falta para que se sigan viendo
+     bien definidos. */
+  .custom-modal-overlay, .order-overlay, .confirm-overlay,
+  .header, .pcard, .cart-bar, .order-toast {
+    backdrop-filter: none;
+    -webkit-backdrop-filter: none;
+  }
+  .pcard { background: rgba(45, 31, 24, 0.92); }
+  .header { background: rgba(21, 14, 10, 0.94); }
   .custom-modal-overlay, .order-overlay {
     align-items: flex-end;
     padding: 0;

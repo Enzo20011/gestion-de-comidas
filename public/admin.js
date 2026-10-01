@@ -217,6 +217,7 @@ async function showApp() {
     await loadOrders();
     loadDashboard();
     setupSSE();
+    loadSettings();
   }
 }
 
@@ -288,7 +289,9 @@ function switchAdminTab(tabName) {
   document.getElementById('dashboardTab').hidden = tabName !== 'dashboard';
   document.getElementById('ordersTab').hidden = tabName !== 'orders';
   document.getElementById('menuTab').hidden = tabName !== 'menu';
+  document.getElementById('settingsTab').hidden = tabName !== 'settings';
   if (tabName === 'menu' && !currentMenu) loadMenu();
+  if (tabName === 'settings' && !currentSettings) loadSettings();
   window.scrollTo({ top: 0, behavior: 'smooth' });
 }
 
@@ -1265,3 +1268,214 @@ document.getElementById('itemDeleteBtn').addEventListener('click', async () => {
   }
 });
 
+
+
+// ── datos del local: estado abierto/cerrado, horarios, envíos ──
+
+const DAY_NAMES = ['Domingo', 'Lunes', 'Martes', 'Miércoles', 'Jueves', 'Viernes', 'Sábado'];
+let currentSettings = null;
+
+async function loadSettings() {
+  try {
+    const res = await fetch('/api/admin/settings');
+    if (!res.ok) throw new Error('HTTP ' + res.status);
+    const data = await res.json();
+    currentSettings = data.settings;
+    renderSettings();
+  } catch (e) {
+    document.getElementById('settingsStatusText').textContent = 'No se pudieron cargar los datos del local.';
+  }
+}
+
+async function saveSettings(partial) {
+  const res = await fetch('/api/admin/settings', {
+    method: 'PUT',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(partial),
+  });
+  const data = await res.json().catch(() => ({}));
+  if (!res.ok || !data.ok) throw new Error(data.error || 'No se pudo guardar.');
+  currentSettings = data.settings;
+  return data.settings;
+}
+
+function renderOpenState() {
+  const st = currentSettings;
+  const headerBtn = document.getElementById('openToggleBtn');
+  const tabBtn = document.getElementById('settingsOpenToggleBtn');
+  const text = document.getElementById('settingsStatusText');
+  if (!st) return;
+
+  let label, cls, status;
+  if (st.manualClosed) {
+    label = '🔴 Cerrado a mano · Reabrir';
+    cls = 'is-closed';
+    status = 'Cerraste el local a mano: no se aceptan pedidos hasta que lo reabras.';
+  } else if (st.isOpen) {
+    label = '🟢 Abierto · Cerrar local';
+    cls = '';
+    status = 'Abierto: se aceptan pedidos. Podés cerrarlo en cualquier momento.';
+  } else {
+    label = '🌙 Fuera de horario';
+    cls = 'is-off';
+    status = 'Fuera de horario: no se aceptan pedidos hasta que abra según los horarios de abajo.';
+  }
+  for (const btn of [headerBtn, tabBtn]) {
+    btn.textContent = label;
+    btn.className = btn === headerBtn ? 'open-btn ' + cls : cls;
+    btn.disabled = !st.manualClosed && !st.isOpen;
+  }
+  text.textContent = status;
+}
+
+async function toggleManualClosed() {
+  if (!currentSettings) return;
+  const closing = !currentSettings.manualClosed;
+  if (closing && !confirm('¿Cerrar el local? Los clientes no van a poder confirmar pedidos hasta que lo reabras.')) return;
+  try {
+    await saveSettings({ manualClosed: closing });
+    renderOpenState();
+    showToast(closing ? 'Local cerrado.' : 'Local reabierto.');
+  } catch (e) {
+    showToast(e.message, true);
+  }
+}
+
+document.getElementById('openToggleBtn').addEventListener('click', toggleManualClosed);
+document.getElementById('settingsOpenToggleBtn').addEventListener('click', toggleManualClosed);
+
+function renderSettings() {
+  const st = currentSettings;
+  renderOpenState();
+
+  document.getElementById('setWhatsapp').value = st.whatsappNumber;
+  document.getElementById('setAlias').value = st.transferAlias;
+  document.getElementById('setAddress').value = st.address;
+  document.getElementById('setMapsUrl').value = st.mapsUrl;
+  document.getElementById('setHours').value = st.hours.join('\n');
+  document.getElementById('setScheduleNote').value = st.scheduleNote;
+
+  const list = document.getElementById('weeklyHoursList');
+  list.textContent = '';
+  // Lunes primero, domingo al final
+  for (const d of [1, 2, 3, 4, 5, 6, 0]) list.appendChild(buildDayRow(d, st.weeklyHours[String(d)] || []));
+
+  const zones = document.getElementById('zonesList');
+  zones.textContent = '';
+  for (const z of st.deliveryZones) zones.appendChild(buildZoneRow(z.name, z.fee));
+}
+
+function buildDayRow(day, ranges) {
+  const row = document.createElement('div');
+  row.className = 'day-row';
+  row.dataset.day = String(day);
+
+  const name = document.createElement('div');
+  name.className = 'day-name';
+  name.textContent = DAY_NAMES[day];
+
+  const wrap = document.createElement('div');
+  wrap.className = 'day-ranges';
+
+  const rangesBox = document.createElement('div');
+  rangesBox.style.cssText = 'display:flex;flex-direction:column;gap:6px;';
+
+  const refresh = () => {
+    const empty = rangesBox.querySelector('.range-row') === null;
+    closedNote.hidden = !empty;
+  };
+
+  const closedNote = document.createElement('div');
+  closedNote.className = 'range-closed';
+  closedNote.textContent = 'Cerrado todo el día';
+
+  const addRange = (from, to) => {
+    const r = document.createElement('div');
+    r.className = 'range-row';
+    const a = document.createElement('input'); a.type = 'time'; a.value = from; a.className = 'range-from';
+    const sep = document.createElement('span'); sep.className = 'sep'; sep.textContent = 'a';
+    const b = document.createElement('input'); b.type = 'time'; b.value = to === '24:00' ? '23:59' : to; b.className = 'range-to'; // el input de hora no admite 24:00
+    const del = document.createElement('button');
+    del.type = 'button'; del.className = 'mini-btn danger'; del.textContent = '✕'; del.title = 'Quitar tramo';
+    del.addEventListener('click', () => { r.remove(); refresh(); });
+    r.append(a, sep, b, del);
+    rangesBox.appendChild(r);
+    refresh();
+  };
+
+  for (const [from, to] of ranges) addRange(from, to);
+
+  const add = document.createElement('button');
+  add.type = 'button'; add.className = 'mini-btn'; add.textContent = '+ Tramo';
+  add.addEventListener('click', () => addRange('18:00', '23:59'));
+
+  wrap.append(rangesBox, closedNote, add);
+  row.append(name, wrap);
+  refresh();
+  return row;
+}
+
+function buildZoneRow(name, fee) {
+  const row = document.createElement('div');
+  row.className = 'zone-row';
+  const n = document.createElement('input');
+  n.className = 'zone-name'; n.maxLength = 40; n.placeholder = 'Barrio / zona'; n.value = name;
+  const f = document.createElement('input');
+  f.className = 'zone-fee'; f.type = 'number'; f.min = '0'; f.step = '100'; f.placeholder = 'Costo'; f.value = fee;
+  const del = document.createElement('button');
+  del.type = 'button'; del.className = 'mini-btn danger'; del.textContent = '✕'; del.title = 'Quitar zona';
+  del.addEventListener('click', () => row.remove());
+  row.append(n, f, del);
+  return row;
+}
+
+document.getElementById('addZoneBtn').addEventListener('click', () => {
+  const row = buildZoneRow('', '');
+  document.getElementById('zonesList').appendChild(row);
+  row.querySelector('.zone-name').focus();
+});
+
+function collectSettings() {
+  const weeklyHours = {};
+  document.querySelectorAll('#weeklyHoursList .day-row').forEach(row => {
+    const ranges = [];
+    row.querySelectorAll('.range-row').forEach(r => {
+      const from = r.querySelector('.range-from').value;
+      const to = r.querySelector('.range-to').value;
+      ranges.push([from, to === '23:59' ? '24:00' : to]); // 23:59 = fin del día
+    });
+    weeklyHours[row.dataset.day] = ranges;
+  });
+
+  const deliveryZones = [...document.querySelectorAll('#zonesList .zone-row')].map(row => ({
+    name: row.querySelector('.zone-name').value.trim(),
+    fee: Number(row.querySelector('.zone-fee').value || 0),
+  }));
+
+  return {
+    whatsappNumber: document.getElementById('setWhatsapp').value,
+    transferAlias: document.getElementById('setAlias').value,
+    address: document.getElementById('setAddress').value,
+    mapsUrl: document.getElementById('setMapsUrl').value,
+    hours: document.getElementById('setHours').value,
+    scheduleNote: document.getElementById('setScheduleNote').value,
+    weeklyHours,
+    deliveryZones,
+  };
+}
+
+document.getElementById('settingsSaveBtn').addEventListener('click', async () => {
+  const errorEl = document.getElementById('settingsError');
+  const btn = document.getElementById('settingsSaveBtn');
+  errorEl.textContent = '';
+  btn.disabled = true;
+  try {
+    await saveSettings(collectSettings());
+    renderSettings();
+    showToast('Cambios guardados.');
+  } catch (e) {
+    errorEl.textContent = e.message;
+  } finally {
+    btn.disabled = false;
+  }
+});

@@ -120,6 +120,8 @@ function hasImageSignature(filePath) {
 const WEEKDAYS = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
 
 function isOpenNow(brand) {
+  // El cierre manual desde el panel gana sobre el horario y sobre FORCE_OPEN.
+  if (brand && brand.manualClosed) return false;
   if (FORCE_OPEN) return true;
 
   const parts = new Intl.DateTimeFormat('en-GB', {
@@ -812,6 +814,122 @@ app.delete('/api/categories/:key', requireSession, async (req, res) => {
     res.json({ ok: true });
   } catch (err) {
     sendError(res, err, 'DELETE /api/categories/:key', 'Error al eliminar la categoría.');
+  }
+});
+
+// ── admin: datos del local (horarios, envíos, contacto, cierre manual) ──
+
+const TIME_RE = /^([01]\d|2[0-3]):[0-5]\d$|^24:00$/;
+
+function readSettingsFields(body) {
+  const fields = {};
+  const errors = [];
+
+  if (body.manualClosed !== undefined) fields.manualClosed = Boolean(body.manualClosed);
+
+  if (body.transferAlias !== undefined) fields.transferAlias = cleanText(body.transferAlias, 60);
+  if (body.address !== undefined) fields.address = cleanText(body.address, 200);
+  if (body.scheduleNote !== undefined) fields.scheduleNote = cleanText(body.scheduleNote, 80);
+
+  if (body.whatsappNumber !== undefined) {
+    const digits = String(body.whatsappNumber).replace(/\D/g, '');
+    if (digits && (digits.length < 8 || digits.length > 15)) errors.push('WhatsApp inválido (solo números, con código de país).');
+    else fields.whatsappNumber = digits;
+  }
+
+  if (body.mapsUrl !== undefined) {
+    const url = String(body.mapsUrl).trim().slice(0, 300);
+    if (url && !/^https:\/\//i.test(url)) errors.push('El link de Maps tiene que empezar con https://');
+    else fields.mapsUrl = url;
+  }
+
+  if (body.hours !== undefined) {
+    const lines = Array.isArray(body.hours) ? body.hours : String(body.hours).split('\n');
+    fields.hours = lines.map(l => cleanText(l, 60)).filter(Boolean).slice(0, 6);
+  }
+
+  if (body.weeklyHours !== undefined) {
+    const wh = body.weeklyHours;
+    if (!wh || typeof wh !== 'object' || Array.isArray(wh)) {
+      errors.push('Horarios inválidos.');
+    } else {
+      const out = {};
+      for (let d = 0; d <= 6; d++) {
+        const ranges = wh[String(d)];
+        if (!Array.isArray(ranges) || ranges.length > 4) { errors.push('Horarios inválidos.'); break; }
+        const clean = [];
+        for (const r of ranges) {
+          const ok = Array.isArray(r) && r.length === 2 && TIME_RE.test(String(r[0])) && TIME_RE.test(String(r[1])) && String(r[0]) < String(r[1]);
+          if (!ok) { errors.push('Cada horario necesita "desde" y "hasta" válidos, con "desde" menor que "hasta".'); break; }
+          clean.push([String(r[0]), String(r[1])]);
+        }
+        if (errors.length) break;
+        out[String(d)] = clean;
+      }
+      if (!errors.length) fields.weeklyHours = out;
+    }
+  }
+
+  if (body.deliveryZones !== undefined) {
+    const zones = body.deliveryZones;
+    if (!Array.isArray(zones) || zones.length > 60) {
+      errors.push('Zonas de envío inválidas.');
+    } else {
+      const seen = new Set();
+      const out = [];
+      for (const z of zones) {
+        const name = cleanText(z && z.name, 40);
+        const fee = Number(z && z.fee);
+        if (!name) { errors.push('Cada zona necesita un nombre.'); break; }
+        if (name.toLowerCase() === 'otra') { errors.push('"otra" es un nombre reservado.'); break; }
+        if (!Number.isInteger(fee) || fee < 0 || fee > 100_000) { errors.push(`Costo de envío inválido en ${name}.`); break; }
+        if (seen.has(name.toLowerCase())) { errors.push(`La zona ${name} está repetida.`); break; }
+        seen.add(name.toLowerCase());
+        out.push({ name, fee });
+      }
+      if (!errors.length) fields.deliveryZones = out;
+    }
+  }
+
+  return { fields, errors };
+}
+
+function settingsView(brand) {
+  return {
+    manualClosed:   Boolean(brand.manualClosed),
+    isOpen:         isOpenNow(brand),
+    transferAlias:  brand.transferAlias || '',
+    whatsappNumber: brand.whatsappNumber || '',
+    address:        brand.address || '',
+    mapsUrl:        brand.mapsUrl || '',
+    scheduleNote:   brand.scheduleNote || '',
+    hours:          brand.hours || [],
+    weeklyHours:    brand.weeklyHours || {},
+    deliveryZones:  brand.deliveryZones || [],
+  };
+}
+
+app.get('/api/admin/settings', requireSession, async (req, res) => {
+  try {
+    const menu = await db.loadMenu();
+    res.json({ ok: true, settings: settingsView(menu.brand) });
+  } catch (err) {
+    sendError(res, err, 'GET /api/admin/settings', 'Error al cargar los datos del local.');
+  }
+});
+
+app.put('/api/admin/settings', requireSession, async (req, res) => {
+  try {
+    const { fields, errors } = readSettingsFields(req.body || {});
+    if (errors.length) return res.status(400).json({ ok: false, error: errors.join(' ') });
+
+    const settings = await db.withMenuLock(async (menu) => {
+      Object.assign(menu.brand, fields);
+      return settingsView(menu.brand);
+    });
+    res.json({ ok: true, settings });
+  } catch (err) {
+    sendError(res, err, 'PUT /api/admin/settings', 'Error al guardar los datos del local.');
   }
 });
 

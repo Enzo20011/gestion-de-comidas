@@ -71,7 +71,7 @@ function renderBrand() {
 
   document.getElementById('openBadge').classList.toggle('closed', !b.isOpen);
   document.getElementById('openText').textContent = b.isOpen ? 'Abierto' : 'Cerrado';
-  document.getElementById('scheduleNote').textContent = b.isOpen ? b.scheduleNote : 'Abrimos a las 18 hs';
+  document.getElementById('scheduleNote').textContent = b.isOpen ? b.scheduleNote : (b.manualClosed ? 'Cerrado por el momento' : 'Abrimos a las 18 hs');
   document.getElementById('closedBanner').hidden = b.isOpen;
   document.getElementById('footerName').textContent = fullName;
   document.getElementById('footerTagline').textContent = b.tagline ? `“${b.tagline}”` : '';

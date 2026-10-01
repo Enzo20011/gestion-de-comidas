@@ -42,6 +42,7 @@
       </div>
     </div>
     <div class="admin-header-actions">
+      <button class="open-btn" id="openToggleBtn" title="Cerrar o reabrir el local para pedidos" disabled>Local…</button>
       <button class="sound-btn" id="soundToggleBtn" title="Activar o silenciar sonido de pedidos">🔔 Sonido</button>
       <button class="notif-btn" id="notifBtn" hidden>Activar avisos</button>
       <button class="secondary" id="wspAdminBtn">WhatsApp</button>
@@ -53,6 +54,7 @@
     <button class="tab-btn active" data-tab="dashboard">Dashboard</button>
     <button class="tab-btn" data-tab="orders">Pedidos <span class="tab-badge" id="ordersBadge" hidden>0</span></button>
     <button class="tab-btn" data-tab="menu">Menú</button>
+    <button class="tab-btn" data-tab="settings">Local</button>
   </div>
 
   <!-- DASHBOARD -->
@@ -98,6 +100,67 @@
     <div id="categoriesList"></div>
   </div>
 
+
+  <!-- LOCAL -->
+  <div id="settingsTab" hidden>
+    <div class="settings-card">
+      <div class="settings-head">
+        <div>
+          <div class="settings-title">Estado del local</div>
+          <div class="sub" id="settingsStatusText" style="margin:0;">Cargando…</div>
+        </div>
+        <button id="settingsOpenToggleBtn" disabled>…</button>
+      </div>
+    </div>
+
+    <div class="settings-card">
+      <div class="settings-title">Contacto y pagos</div>
+      <div class="field-row">
+        <div class="field">
+          <label>WhatsApp (con código de país)</label>
+          <input id="setWhatsapp" inputmode="numeric" placeholder="543765201692">
+        </div>
+        <div class="field">
+          <label>Alias de transferencia</label>
+          <input id="setAlias" maxlength="60" placeholder="mi.alias">
+        </div>
+      </div>
+      <div class="field">
+        <label>Dirección</label>
+        <input id="setAddress" maxlength="200">
+      </div>
+      <div class="field">
+        <label>Link de Google Maps (https://…)</label>
+        <input id="setMapsUrl" maxlength="300" placeholder="https://maps.google.com/…">
+      </div>
+    </div>
+
+    <div class="settings-card">
+      <div class="settings-title">Horarios</div>
+      <div class="sub" style="margin:0 0 12px;">Cada día puede tener varios tramos. Para pasar la medianoche, cargá "hasta 24:00" ese día y "desde 00:00" el día siguiente.</div>
+      <div id="weeklyHoursList"></div>
+      <div class="field" style="margin-top:14px;">
+        <label>Texto de horario que ve el cliente (una línea por renglón)</label>
+        <textarea id="setHours" style="height:80px;" placeholder="Todos los días&#10;18:00 a 02:00 hs"></textarea>
+      </div>
+      <div class="field">
+        <label>Frase corta cuando está abierto</label>
+        <input id="setScheduleNote" maxlength="80" placeholder="Todas las noches desde las 18 hs">
+      </div>
+    </div>
+
+    <div class="settings-card">
+      <div class="settings-title">Zonas de envío</div>
+      <div id="zonesList"></div>
+      <button id="addZoneBtn" style="margin-top:8px;">+ Agregar zona</button>
+    </div>
+
+    <div class="settings-save">
+      <div class="modal-error" id="settingsError"></div>
+      <button class="primary" id="settingsSaveBtn">Guardar cambios</button>
+    </div>
+  </div>
+
   <!-- NAVEGACIÓN MÓVIL INFERIOR -->
   <nav class="mobile-admin-bar" id="mobileAdminBar">
     <button class="m-bar-btn active" data-tab="dashboard">
@@ -111,6 +174,10 @@
     <button class="m-bar-btn" data-tab="menu">
       <span class="m-bar-icon">🍔</span>
       <span>Menú</span>
+    </button>
+    <button class="m-bar-btn" data-tab="settings">
+      <span class="m-bar-icon">⚙️</span>
+      <span>Local</span>
     </button>
   </nav>
 </div>

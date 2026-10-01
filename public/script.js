@@ -249,7 +249,7 @@ function renderCustomizationOptions() {
       <div class="cm-label">${escapeHtml(group.label)}</div>
       <div class="cm-options">
         ${group.options.map(ex => `
-          <button class="cm-opt" data-price="${ex.price}" onclick="toggleExtra(this)">${escapeHtml(ex.label)} $${ex.price.toLocaleString('es-AR')}</button>
+          <button class="cm-opt" data-price="${ex.price}" data-label="${escapeHtml(ex.label)}" onclick="toggleExtra(this)">${escapeHtml(ex.label)} $${ex.price.toLocaleString('es-AR')}</button>
         `).join('')}
       </div>
     </div>
@@ -485,8 +485,10 @@ function confirmCustom() {
   const rems = [...document.querySelectorAll('.cm-opt.rem.sel')].map(o => o.textContent);
 
   let extraPrice = 0;
+  const extraLabels = [];
   const extras = [...document.querySelectorAll('[data-price].sel')].map(o => {
     extraPrice += parseInt(o.dataset.price);
+    extraLabels.push(o.dataset.label);
     return o.textContent;
   });
 
@@ -504,6 +506,7 @@ function confirmCustom() {
     name: currentProduct.name,
     price: currentProduct.price + extraPrice,
     qty: cmQty,
+    extras: extraLabels,
     custom: customParts.join(' · '),
   });
 
@@ -733,7 +736,7 @@ async function sendWsp() {
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
         name, phone, mode: deliveryMode, zone, address, payment, cashNote,
-        items: cart.map(i => ({ id: i.productId, price: i.price, qty: i.qty, custom: i.custom })),
+        items: cart.map(i => ({ id: i.productId, qty: i.qty, extras: i.extras || [], custom: i.custom })),
       }),
     });
     const data = await res.json();

@@ -24,6 +24,36 @@ const ASSETS_DIR = path.join(__dirname, 'public', 'assets');
 
 const app = express();
 
+// Detrás del proxy de Vercel, req.ip tiene que salir de X-Forwarded-For;
+// si no, el rate limit ve una sola IP (la del proxy) para todo el mundo.
+if (IS_VERCEL) app.set('trust proxy', 1);
+app.disable('x-powered-by');
+
+// Headers de seguridad. El CSP permite 'unsafe-inline' en scripts porque el
+// frontend usa onclick="..." y un <script> inline; el resto queda cerrado.
+app.use((req, res, next) => {
+  res.setHeader('X-Content-Type-Options', 'nosniff');
+  res.setHeader('X-Frame-Options', 'DENY');
+  res.setHeader('Referrer-Policy', 'strict-origin-when-cross-origin');
+  res.setHeader('Permissions-Policy', 'camera=(), microphone=(), geolocation=()');
+  res.setHeader('Content-Security-Policy', [
+    "default-src 'self'",
+    "script-src 'self' 'unsafe-inline'",
+    "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com",
+    "font-src https://fonts.gstatic.com",
+    "img-src 'self' data: https:",
+    "connect-src 'self'",
+    "object-src 'none'",
+    "base-uri 'self'",
+    "form-action 'self'",
+    "frame-ancestors 'none'",
+  ].join('; '));
+  if (req.secure || req.headers['x-forwarded-proto'] === 'https') {
+    res.setHeader('Strict-Transport-Security', 'max-age=31536000; includeSubDomains');
+  }
+  next();
+});
+
 // WhatsApp Web deshabilitado (requiere servidor local con puppeteer)
 
 app.use(express.json({ limit: '50kb' }));
@@ -170,20 +200,25 @@ function requireSession(req, res, next) {
   return res.status(401).json({ ok: false, error: 'No autenticado.' });
 }
 
-// very small fixed-window rate limiter, keyed by IP
+// very small fixed-window rate limiter, keyed by IP + limiter name
 const rateBuckets = new Map();
-function rateLimit(max, windowMs) {
+function rateLimit(name, max, windowMs, message) {
   return (req, res, next) => {
-    const key = req.ip;
+    const key = `${name}:${req.ip}`;
     const now = Date.now();
+
+    if (rateBuckets.size > 5000) {
+      for (const [k, b] of rateBuckets) if (now - b.start > b.windowMs) rateBuckets.delete(k);
+    }
+
     const bucket = rateBuckets.get(key);
     if (!bucket || now - bucket.start > windowMs) {
-      rateBuckets.set(key, { start: now, count: 1 });
+      rateBuckets.set(key, { start: now, count: 1, windowMs });
       return next();
     }
     bucket.count += 1;
     if (bucket.count > max) {
-      return res.status(429).json({ ok: false, error: 'Demasiados pedidos, esperá un momento.' });
+      return res.status(429).json({ ok: false, error: message });
     }
     next();
   };
@@ -213,7 +248,7 @@ app.get('/api/config', (req, res) => {
   res.json({ googleMapsKey: process.env.GOOGLE_MAPS_KEY || '' });
 });
 
-app.post('/api/orders', rateLimit(10, 60_000), async (req, res) => {
+app.post('/api/orders', rateLimit('orders', 10, 60_000, 'Demasiados pedidos, esperá un momento.'), async (req, res) => {
   try {
     const body = req.body || {};
     const menu = await db.loadMenu();
@@ -261,6 +296,9 @@ app.post('/api/orders', rateLimit(10, 60_000), async (req, res) => {
 
     const items = [];
     for (const raw of body.items) {
+      if (!raw || typeof raw !== 'object') {
+        return res.status(400).json({ ok: false, error: 'El pedido no tiene productos válidos.' });
+      }
       const catalogItem = catalog.get(String(raw.id));
       if (!catalogItem) {
         return res.status(400).json({ ok: false, error: `Producto desconocido: ${raw.id}` });
@@ -338,7 +376,7 @@ app.post('/api/orders', rateLimit(10, 60_000), async (req, res) => {
 
 // ── login ────────────────────────────────────────────────
 
-app.post('/api/admin/login', rateLimit(10, 60_000), (req, res) => {
+app.post('/api/admin/login', rateLimit('login', 5, 15 * 60_000, 'Demasiados intentos, esperá unos minutos.'), (req, res) => {
   const body = req.body || {};
   const user = String(body.username || '');
   const pass = String(body.password || '');
@@ -719,13 +757,21 @@ module.exports = app;
 
 if (!IS_VERCEL) app.listen(PORT, () => {
   console.log(`Mía corriendo en http://localhost:${PORT}`);
+  logSecurityWarnings();
+});
+
+function logSecurityWarnings() {
   if (ADMIN_PASS === 'admin') {
-    console.log('Aviso: estás usando la contraseña de admin por defecto. Configurá ADMIN_USER/ADMIN_PASS en .env');
+    console.warn('Aviso: estás usando la contraseña de admin por defecto. Configurá ADMIN_USER/ADMIN_PASS en .env');
+  }
+  if (!process.env.SESSION_SECRET) {
+    console.warn('Aviso: falta SESSION_SECRET; se genera uno al azar y las sesiones se pierden al reiniciar.');
   }
   if (ADMIN_OPEN_LOGIN) {
-    console.log('Aviso: ADMIN_OPEN_LOGIN=true, el login de /admin.html acepta cualquier usuario/contraseña. Sacá esta variable de .env antes de usar el sitio en serio.');
+    console.warn('Aviso: ADMIN_OPEN_LOGIN=true, el login de /admin.html acepta cualquier usuario/contraseña. Sacá esta variable de .env antes de usar el sitio en serio.');
   }
   if (FORCE_OPEN) {
-    console.log('Aviso: FORCE_OPEN=true, el local figura Abierto siempre (ignora los horarios). Sacá esta variable de .env antes de usar el sitio en serio.');
+    console.warn('Aviso: FORCE_OPEN=true, el local figura Abierto siempre (ignora los horarios). Sacá esta variable de .env antes de usar el sitio en serio.');
   }
-});
+}
+if (IS_VERCEL) logSecurityWarnings();

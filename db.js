@@ -9,7 +9,7 @@ function getPool() {
   if (!_pool) {
     _pool = new Pool({
       connectionString: process.env.DATABASE_URL,
-      ssl: { rejectUnauthorized: false },
+      ssl: { rejectUnauthorized: process.env.DB_SSL_INSECURE !== 'true' },
       max: 10,
     });
   }

@@ -14,6 +14,8 @@ const PORT = process.env.PORT || 8765;
 const ADMIN_USER      = process.env.ADMIN_USER  || 'admin';
 const ADMIN_PASS      = process.env.ADMIN_PASS  || 'admin';
 const SESSION_SECRET  = process.env.SESSION_SECRET || crypto.randomBytes(32).toString('hex');
+// La clave de firma incluye la contraseña de admin: si se cambia, las sesiones viejas dejan de valer.
+const SESSION_KEY     = crypto.createHash('sha256').update(`${SESSION_SECRET}:${process.env.ADMIN_PASS || 'admin'}`).digest();
 const SESSION_MAX_AGE_MS = 7 * 24 * 60 * 60 * 1000; // 7 días
 const ADMIN_OPEN_LOGIN = process.env.ADMIN_OPEN_LOGIN === 'true';
 const FORCE_OPEN       = process.env.FORCE_OPEN === 'true';
@@ -96,6 +98,25 @@ const upload = multer({
   },
 });
 
+// Verifica el contenido real del archivo (PNG, JPEG, GIF o WEBP), no solo la extensión.
+function hasImageSignature(filePath) {
+  let fd;
+  try {
+    fd = fs.openSync(filePath, 'r');
+    const head = Buffer.alloc(12);
+    fs.readSync(fd, head, 0, 12, 0);
+    const isPng  = head.subarray(0, 8).equals(Buffer.from([0x89, 0x50, 0x4e, 0x47, 0x0d, 0x0a, 0x1a, 0x0a]));
+    const isJpg  = head[0] === 0xff && head[1] === 0xd8 && head[2] === 0xff;
+    const isGif  = head.subarray(0, 4).toString('latin1') === 'GIF8';
+    const isWebp = head.subarray(0, 4).toString('latin1') === 'RIFF' && head.subarray(8, 12).toString('latin1') === 'WEBP';
+    return isPng || isJpg || isGif || isWebp;
+  } catch {
+    return false;
+  } finally {
+    if (fd !== undefined) fs.closeSync(fd);
+  }
+}
+
 const WEEKDAYS = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
 
 function isOpenNow(brand) {
@@ -136,6 +157,25 @@ function buildCatalog(menu) {
   return catalog;
 }
 
+class HttpError extends Error {
+  constructor(status, message) { super(message); this.status = status; }
+}
+
+// Texto libre del cliente: sin caracteres de control, recortado.
+function cleanText(value, max) {
+  return String(value || '').replace(/[\u0000-\u001f\u007f]+/g, ' ').trim().slice(0, max);
+}
+
+// label del extra -> precio, tomado del menú del servidor
+function buildExtraPriceMap(menu) {
+  const map = new Map();
+  const groups = (menu.customizationOptions && menu.customizationOptions.extraGroups) || [];
+  for (const group of groups) {
+    for (const opt of group.options || []) map.set(opt.label, opt.price);
+  }
+  return map;
+}
+
 function timingSafeEqualStr(a, b) {
   const bufA = Buffer.from(String(a));
   const bufB = Buffer.from(String(b));
@@ -163,7 +203,7 @@ function parseCookies(req) {
 function createSessionToken() {
   const payload = JSON.stringify({ exp: Date.now() + SESSION_MAX_AGE_MS });
   const body = Buffer.from(payload).toString('base64url');
-  const sig = crypto.createHmac('sha256', SESSION_SECRET).update(body).digest('base64url');
+  const sig = crypto.createHmac('sha256', SESSION_KEY).update(body).digest('base64url');
   return `${body}.${sig}`;
 }
 
@@ -173,7 +213,7 @@ function verifySessionToken(token) {
   if (dot === -1) return false;
   const body = token.slice(0, dot);
   const sig  = token.slice(dot + 1);
-  const expectedSig = crypto.createHmac('sha256', SESSION_SECRET).update(body).digest('base64url');
+  const expectedSig = crypto.createHmac('sha256', SESSION_KEY).update(body).digest('base64url');
   if (!timingSafeEqualStr(sig, expectedSig)) return false;
   try {
     const payload = JSON.parse(Buffer.from(body, 'base64url').toString('utf8'));
@@ -190,8 +230,9 @@ function setSessionCookie(req, res) {
     `session=${token}; HttpOnly; Path=/; Max-Age=${Math.floor(SESSION_MAX_AGE_MS / 1000)}; SameSite=Lax${secure ? '; Secure' : ''}`);
 }
 
-function clearSessionCookie(res) {
-  res.setHeader('Set-Cookie', 'session=; HttpOnly; Path=/; Max-Age=0; SameSite=Lax');
+function clearSessionCookie(req, res) {
+  const secure = req.secure || req.headers['x-forwarded-proto'] === 'https';
+  res.setHeader('Set-Cookie', `session=; HttpOnly; Path=/; Max-Age=0; SameSite=Lax${secure ? '; Secure' : ''}`);
 }
 
 function requireSession(req, res, next) {
@@ -224,7 +265,27 @@ function rateLimit(name, max, windowMs, message) {
   };
 }
 
+// CSRF: un pedido que cambia datos y trae Origin de otro sitio se rechaza.
+// (Sin Origin —curl, apps— pasa; el navegador siempre lo manda en fetch POST/PUT/PATCH/DELETE.)
+app.use('/api', (req, res, next) => {
+  if (req.method === 'GET' || req.method === 'HEAD' || req.method === 'OPTIONS') return next();
+  const origin = req.headers.origin;
+  if (!origin) return next();
+  const host = req.headers['x-forwarded-host'] || req.headers.host;
+  let originHost = '';
+  try { originHost = new URL(origin).host; } catch { /* origin inválido */ }
+  if (originHost && originHost === host) return next();
+  return res.status(403).json({ ok: false, error: 'Origen no permitido.' });
+});
+
+app.use('/api', rateLimit('api', 120, 60_000, 'Demasiadas solicitudes, esperá un momento.'));
+
+const MAX_SSE_CLIENTS = 50;
 const sseClients = new Set();
+// Latido para que proxies no corten la conexión y se detecten sockets muertos
+setInterval(() => {
+  for (const res of sseClients) res.write(': ping\n\n');
+}, 25_000).unref();
 function broadcastOrderUpdate() {
   for (const res of sseClients) {
     res.write('event: order_update\ndata: update\n\n');
@@ -248,127 +309,135 @@ app.get('/api/config', (req, res) => {
   res.json({ googleMapsKey: process.env.GOOGLE_MAPS_KEY || '' });
 });
 
-app.post('/api/orders', rateLimit('orders', 10, 60_000, 'Demasiados pedidos, esperá un momento.'), async (req, res) => {
+app.post('/api/orders',
+  rateLimit('orders', 10, 60_000, 'Demasiados pedidos, esperá un momento.'),
+  rateLimit('orders-hour', 30, 60 * 60_000, 'Demasiados pedidos, probá más tarde.'),
+  async (req, res) => {
   try {
     const body = req.body || {};
-    const menu = await db.loadMenu();
 
-    if (!isOpenNow(menu.brand)) {
-      return res.status(409).json({ ok: false, error: 'Estamos cerrados en este momento. Probá más tarde.' });
-    }
-
-    const catalog = buildCatalog(menu);
-    const maxExtra = menu.customizationOptions.extraGroups
-      .flatMap(g => g.options)
-      .reduce((sum, e) => sum + e.price, 0);
-
-    const name = String(body.name || '').trim().slice(0, 60);
+    const name = cleanText(body.name, 60);
     if (!name) return res.status(400).json({ ok: false, error: 'Falta el nombre.' });
 
     const mode = body.mode === 'delivery' ? 'delivery' : 'retiro';
 
-    const address = String(body.address || '').trim().slice(0, 200);
+    const address = cleanText(body.address, 200);
     if (mode === 'delivery' && !address) {
       return res.status(400).json({ ok: false, error: 'Falta la dirección de entrega.' });
     }
 
-    let zone = '';
-    let deliveryFee = 0;
-    const hasZones = Array.isArray(menu.brand.deliveryZones) && menu.brand.deliveryZones.length > 0;
-    if (mode === 'delivery' && hasZones) {
-      const zoneName = String(body.zone || '').trim();
-      if (zoneName === 'otra') {
-        zone = 'Otra zona (envío a coordinar)';
-      } else {
-        const found = findDeliveryZone(menu.brand, zoneName);
-        if (!found) return res.status(400).json({ ok: false, error: 'Elegí tu barrio para el envío.' });
-        zone = found.name;
-        deliveryFee = found.fee;
-      }
-    }
-
     const payment  = body.payment === 'efectivo' ? 'efectivo' : 'transferencia';
-    const cashNote = String(body.cashNote || '').trim().slice(0, 100);
+    const cashNote = cleanText(body.cashNote, 100);
+    const phone    = String(body.phone || '').replace(/[^\d+\-\s()]/g, '').trim().slice(0, 20);
 
     if (!Array.isArray(body.items) || body.items.length === 0 || body.items.length > 30) {
       return res.status(400).json({ ok: false, error: 'El pedido no tiene productos válidos.' });
     }
 
-    const items = [];
-    for (const raw of body.items) {
-      if (!raw || typeof raw !== 'object') {
-        return res.status(400).json({ ok: false, error: 'El pedido no tiene productos válidos.' });
+    // Todo lo que depende del menú (horario, precios, stock) corre con el menú
+    // bloqueado, para que dos pedidos a la vez no vendan el mismo stock dos veces.
+    const order = await db.withMenuLock(async (menu, client) => {
+      if (!isOpenNow(menu.brand)) {
+        throw new HttpError(409, 'Estamos cerrados en este momento. Probá más tarde.');
       }
-      const catalogItem = catalog.get(String(raw.id));
-      if (!catalogItem) {
-        return res.status(400).json({ ok: false, error: `Producto desconocido: ${raw.id}` });
-      }
-      const price    = Number(raw.price);
-      const minPrice = catalogItem.price;
-      const maxPrice = catalogItem.customizable ? catalogItem.price + maxExtra : catalogItem.price;
-      if (!Number.isFinite(price) || price < minPrice || price > maxPrice) {
-        return res.status(400).json({ ok: false, error: `Precio inválido para ${catalogItem.name}.` });
-      }
-      const qty = Number.isInteger(raw.qty) && raw.qty > 0 && raw.qty <= 20 ? raw.qty : 1;
 
-      if (typeof catalogItem.stock === 'number') {
-        if (catalogItem.stock < qty) {
-          return res.status(400).json({ ok: false, error: `Sin stock suficiente para: ${catalogItem.name}. Quedan ${catalogItem.stock}.` });
+      const catalog  = buildCatalog(menu);
+      const extraMap = buildExtraPriceMap(menu);
+
+      let zone = '';
+      let deliveryFee = 0;
+      const hasZones = Array.isArray(menu.brand.deliveryZones) && menu.brand.deliveryZones.length > 0;
+      if (mode === 'delivery' && hasZones) {
+        const zoneName = String(body.zone || '').trim();
+        if (zoneName === 'otra') {
+          zone = 'Otra zona (envío a coordinar)';
+        } else {
+          const found = findDeliveryZone(menu.brand, zoneName);
+          if (!found) throw new HttpError(400, 'Elegí tu barrio para el envío.');
+          zone = found.name;
+          deliveryFee = found.fee;
         }
       }
 
-      items.push({
-        id:     catalogItem.id,
-        name:   catalogItem.name,
-        price,
-        qty,
-        custom: String(raw.custom || '').trim().slice(0, 200),
-      });
-    }
+      const items = [];
+      const wanted = new Map(); // id -> cantidad total pedida (para el stock)
+      for (const raw of body.items) {
+        if (!raw || typeof raw !== 'object') {
+          throw new HttpError(400, 'El pedido no tiene productos válidos.');
+        }
+        const catalogItem = catalog.get(String(raw.id));
+        if (!catalogItem) throw new HttpError(400, 'Hay un producto que ya no está en el menú.');
 
-    const subtotal = items.reduce((sum, i) => sum + i.price * i.qty, 0);
-    const total    = subtotal + deliveryFee;
+        // El precio lo calcula el servidor: base + extras elegidos. El que manda el cliente se ignora.
+        const extras = raw.extras === undefined ? [] : raw.extras;
+        if (!Array.isArray(extras) || extras.length > 20) {
+          throw new HttpError(400, `Extras inválidos para ${catalogItem.name}.`);
+        }
+        if (extras.length && !catalogItem.customizable) {
+          throw new HttpError(400, `${catalogItem.name} no admite extras.`);
+        }
+        let extraTotal = 0;
+        for (const label of extras) {
+          const extraPrice = extraMap.get(String(label));
+          if (extraPrice === undefined) throw new HttpError(400, `Extra inválido para ${catalogItem.name}.`);
+          extraTotal += extraPrice;
+        }
+        const price = catalogItem.price + extraTotal;
 
-    const order = {
-      id:          crypto.randomUUID(),
-      createdAt:   new Date().toISOString(),
-      status:      'nuevo',
-      name,
-      phone:       String(body.phone || '').trim().slice(0, 20),
-      mode,
-      address:     mode === 'delivery' ? address : '',
-      zone,
-      deliveryFee,
-      payment,
-      cashNote:    payment === 'efectivo' ? cashNote : '',
-      items,
-      total,
-    };
+        const qty = Number.isInteger(raw.qty) && raw.qty > 0 && raw.qty <= 20 ? raw.qty : 1;
+        wanted.set(catalogItem.id, (wanted.get(catalogItem.id) || 0) + qty);
 
-    // Descontar stock en el menú si corresponde
-    let stockChanged = false;
-    for (const item of items) {
-      const catItem = catalog.get(item.id);
-      if (catItem && typeof catItem.stock === 'number') {
+        items.push({
+          id:     catalogItem.id,
+          name:   catalogItem.name,
+          price,
+          qty,
+          custom: cleanText(raw.custom, 200),
+        });
+      }
+
+      for (const [id, qty] of wanted) {
+        const catItem = catalog.get(id);
+        if (typeof catItem.stock === 'number' && catItem.stock < qty) {
+          throw new HttpError(400, `Sin stock suficiente para: ${catItem.name}. Quedan ${catItem.stock}.`);
+        }
+      }
+
+      // Descontar stock (se guarda al salir del lock)
+      for (const [id, qty] of wanted) {
+        const catItem = catalog.get(id);
+        if (typeof catItem.stock !== 'number') continue;
         const category = menu.categories.find(c => c.key === catItem.categoryKey);
-        if (category) {
-          const menuItem = category.items.find(i => i.id === item.id);
-          if (menuItem) {
-            menuItem.stock -= item.qty;
-            stockChanged = true;
-          }
-        }
+        const menuItem = category && category.items.find(i => i.id === id);
+        if (menuItem) menuItem.stock -= qty;
       }
-    }
 
-    if (stockChanged) await db.saveMenu(menu);
-    await db.insertOrder(order);
+      const subtotal = items.reduce((sum, i) => sum + i.price * i.qty, 0);
+      const created = {
+        id:          crypto.randomUUID(),
+        createdAt:   new Date().toISOString(),
+        status:      'nuevo',
+        name,
+        phone,
+        mode,
+        address:     mode === 'delivery' ? address : '',
+        zone,
+        deliveryFee,
+        payment,
+        cashNote:    payment === 'efectivo' ? cashNote : '',
+        items,
+        total:       subtotal + deliveryFee,
+      };
+      await db.insertOrder(created, client);
+      return created;
+    });
 
     broadcastOrderUpdate();
     printTicket(order);
 
-    res.status(201).json({ ok: true, orderId: order.id, total });
+    res.status(201).json({ ok: true, orderId: order.id, total: order.total });
   } catch (err) {
+    if (err instanceof HttpError) return res.status(err.status).json({ ok: false, error: err.message });
     console.error('POST /api/orders:', err);
     res.status(500).json({ ok: false, error: 'Error interno al procesar el pedido.' });
   }
@@ -393,7 +462,7 @@ app.post('/api/admin/login', rateLimit('login', 5, 15 * 60_000, 'Demasiados inte
 });
 
 app.post('/api/admin/logout', (req, res) => {
-  clearSessionCookie(res);
+  clearSessionCookie(req, res);
   res.json({ ok: true });
 });
 
@@ -404,6 +473,9 @@ app.get('/api/admin/session', requireSession, (req, res) => {
 // ── admin API (requiere sesión) ─────────────────────────
 
 app.get('/api/orders/stream', requireSession, (req, res) => {
+  if (sseClients.size >= MAX_SSE_CLIENTS) {
+    return res.status(503).json({ ok: false, error: 'Demasiadas conexiones abiertas.' });
+  }
   res.setHeader('Content-Type', 'text/event-stream');
   res.setHeader('Cache-Control', 'no-cache');
   res.setHeader('Connection', 'keep-alive');
@@ -535,6 +607,10 @@ app.post('/api/admin/upload', requireSession, (req, res) => {
   upload.single('image')(req, res, (err) => {
     if (err) return res.status(400).json({ ok: false, error: 'No se pudo subir la imagen (formato o tamaño inválido, máx. 5MB).' });
     if (!req.file) return res.status(400).json({ ok: false, error: 'Falta el archivo de imagen.' });
+    if (!hasImageSignature(req.file.path)) {
+      fs.unlink(req.file.path, () => {});
+      return res.status(400).json({ ok: false, error: 'El archivo no es una imagen válida.' });
+    }
     res.json({ ok: true, path: 'assets/' + req.file.filename });
   });
 });
@@ -581,58 +657,69 @@ function readItemFields(body, { partial = false } = {}) {
   return { fields, errors };
 }
 
+function sendError(res, err, context, fallbackMessage) {
+  if (err instanceof HttpError) return res.status(err.status).json({ ok: false, error: err.message });
+  console.error(`${context}:`, err);
+  return res.status(500).json({ ok: false, error: fallbackMessage });
+}
+
 app.post('/api/items', requireSession, async (req, res) => {
   try {
-    const menu = await db.loadMenu();
-    const category = menu.categories.find(c => c.key === req.body.categoryKey);
-    if (!category) return res.status(400).json({ ok: false, error: 'Categoría inválida.' });
+    const body = req.body || {};
+    const result = await db.withMenuLock(async (menu) => {
+      const category = menu.categories.find(c => c.key === body.categoryKey);
+      if (!category) throw new HttpError(400, 'Categoría inválida.');
 
-    const { fields, errors } = readItemFields(req.body);
-    if (errors.length) return res.status(400).json({ ok: false, error: errors.join(' ') });
+      const { fields, errors } = readItemFields(body);
+      if (errors.length) throw new HttpError(400, errors.join(' '));
 
-    let id = slugify(fields.name) || 'producto';
-    const allIds = new Set(menu.categories.flatMap(c => c.items.map(i => i.id)));
-    let suffix = 2;
-    let finalId = id;
-    while (allIds.has(finalId)) { finalId = `${id}-${suffix++}`; }
+      const id = slugify(fields.name) || 'producto';
+      const allIds = new Set(menu.categories.flatMap(c => c.items.map(i => i.id)));
+      let suffix = 2;
+      let finalId = id;
+      while (allIds.has(finalId)) { finalId = `${id}-${suffix++}`; }
 
-    const item = { id: finalId, ...fields };
-    category.items.push(item);
-    await db.saveMenu(menu);
-    res.status(201).json({ ok: true, item, categoryKey: category.key });
+      const item = { id: finalId, ...fields };
+      category.items.push(item);
+      return { item, categoryKey: category.key };
+    });
+    res.status(201).json({ ok: true, ...result });
   } catch (err) {
-    console.error('POST /api/items:', err);
-    res.status(500).json({ ok: false, error: 'Error al crear el producto.' });
+    sendError(res, err, 'POST /api/items', 'Error al crear el producto.');
   }
 });
 
 async function handleUpdateItem(req, res) {
   try {
-    const menu = await db.loadMenu();
-    let currentCategory = null;
-    let item = null;
-    for (const cat of menu.categories) {
-      const found = cat.items.find(i => i.id === req.params.id);
-      if (found) { currentCategory = cat; item = found; break; }
-    }
-    if (!item) return res.status(404).json({ ok: false, error: 'Producto no encontrado.' });
+    const body = req.body || {};
+    const item = await db.withMenuLock(async (menu) => {
+      let currentCategory = null;
+      let found = null;
+      for (const cat of menu.categories) {
+        const match = cat.items.find(i => i.id === req.params.id);
+        if (match) { currentCategory = cat; found = match; break; }
+      }
+      if (!found) throw new HttpError(404, 'Producto no encontrado.');
 
-    const { fields, errors } = readItemFields(req.body, { partial: true });
-    if (errors.length) return res.status(400).json({ ok: false, error: errors.join(' ') });
-    Object.assign(item, fields);
+      const { fields, errors } = readItemFields(body, { partial: true });
+      if (errors.length) throw new HttpError(400, errors.join(' '));
 
-    if (req.body.categoryKey && req.body.categoryKey !== currentCategory.key) {
-      const targetCategory = menu.categories.find(c => c.key === req.body.categoryKey);
-      if (!targetCategory) return res.status(400).json({ ok: false, error: 'Categoría destino inválida.' });
-      currentCategory.items = currentCategory.items.filter(i => i.id !== item.id);
-      targetCategory.items.push(item);
-    }
+      let targetCategory = null;
+      if (body.categoryKey && body.categoryKey !== currentCategory.key) {
+        targetCategory = menu.categories.find(c => c.key === body.categoryKey);
+        if (!targetCategory) throw new HttpError(400, 'Categoría destino inválida.');
+      }
 
-    await db.saveMenu(menu);
+      Object.assign(found, fields);
+      if (targetCategory) {
+        currentCategory.items = currentCategory.items.filter(i => i.id !== found.id);
+        targetCategory.items.push(found);
+      }
+      return found;
+    });
     res.json({ ok: true, item });
   } catch (err) {
-    console.error('PUT/PATCH /api/items/:id:', err);
-    res.status(500).json({ ok: false, error: 'Error al actualizar el producto.' });
+    sendError(res, err, 'PUT/PATCH /api/items/:id', 'Error al actualizar el producto.');
   }
 }
 
@@ -641,19 +728,18 @@ app.patch('/api/items/:id', requireSession, handleUpdateItem);
 
 app.delete('/api/items/:id', requireSession, async (req, res) => {
   try {
-    const menu = await db.loadMenu();
-    let removed = false;
-    for (const cat of menu.categories) {
-      const before = cat.items.length;
-      cat.items = cat.items.filter(i => i.id !== req.params.id);
-      if (cat.items.length !== before) removed = true;
-    }
-    if (!removed) return res.status(404).json({ ok: false, error: 'Producto no encontrado.' });
-    await db.saveMenu(menu);
+    await db.withMenuLock(async (menu) => {
+      let removed = false;
+      for (const cat of menu.categories) {
+        const before = cat.items.length;
+        cat.items = cat.items.filter(i => i.id !== req.params.id);
+        if (cat.items.length !== before) removed = true;
+      }
+      if (!removed) throw new HttpError(404, 'Producto no encontrado.');
+    });
     res.json({ ok: true });
   } catch (err) {
-    console.error('DELETE /api/items/:id:', err);
-    res.status(500).json({ ok: false, error: 'Error al eliminar el producto.' });
+    sendError(res, err, 'DELETE /api/items/:id', 'Error al eliminar el producto.');
   }
 });
 
@@ -680,55 +766,52 @@ function readCategoryFields(body, { partial = false } = {}) {
 
 app.post('/api/categories', requireSession, async (req, res) => {
   try {
-    const menu = await db.loadMenu();
-    const { fields, errors } = readCategoryFields(req.body);
+    const { fields, errors } = readCategoryFields(req.body || {});
     if (errors.length) return res.status(400).json({ ok: false, error: errors.join(' ') });
 
-    let key = slugify(fields.navLabel) || 'categoria';
-    let finalKey = key;
-    let suffix = 2;
-    while (menu.categories.some(c => c.key === finalKey)) { finalKey = `${key}-${suffix++}`; }
+    const category = await db.withMenuLock(async (menu) => {
+      const key = slugify(fields.navLabel) || 'categoria';
+      let finalKey = key;
+      let suffix = 2;
+      while (menu.categories.some(c => c.key === finalKey)) { finalKey = `${key}-${suffix++}`; }
 
-    const category = { key: finalKey, ...fields, items: [] };
-    menu.categories.push(category);
-    await db.saveMenu(menu);
+      const created = { key: finalKey, ...fields, items: [] };
+      menu.categories.push(created);
+      return created;
+    });
     res.status(201).json({ ok: true, category });
   } catch (err) {
-    console.error('POST /api/categories:', err);
-    res.status(500).json({ ok: false, error: 'Error al crear la categoría.' });
+    sendError(res, err, 'POST /api/categories', 'Error al crear la categoría.');
   }
 });
 
 app.put('/api/categories/:key', requireSession, async (req, res) => {
   try {
-    const menu = await db.loadMenu();
-    const category = menu.categories.find(c => c.key === req.params.key);
-    if (!category) return res.status(404).json({ ok: false, error: 'Categoría no encontrada.' });
-
-    const { fields, errors } = readCategoryFields(req.body, { partial: true });
+    const { fields, errors } = readCategoryFields(req.body || {}, { partial: true });
     if (errors.length) return res.status(400).json({ ok: false, error: errors.join(' ') });
-    Object.assign(category, fields);
 
-    await db.saveMenu(menu);
+    const category = await db.withMenuLock(async (menu) => {
+      const found = menu.categories.find(c => c.key === req.params.key);
+      if (!found) throw new HttpError(404, 'Categoría no encontrada.');
+      Object.assign(found, fields);
+      return found;
+    });
     res.json({ ok: true, category });
   } catch (err) {
-    console.error('PUT /api/categories/:key:', err);
-    res.status(500).json({ ok: false, error: 'Error al actualizar la categoría.' });
+    sendError(res, err, 'PUT /api/categories/:key', 'Error al actualizar la categoría.');
   }
 });
 
 app.delete('/api/categories/:key', requireSession, async (req, res) => {
   try {
-    const menu = await db.loadMenu();
-    const idx = menu.categories.findIndex(c => c.key === req.params.key);
-    if (idx === -1) return res.status(404).json({ ok: false, error: 'Categoría no encontrada.' });
-
-    menu.categories.splice(idx, 1);
-    await db.saveMenu(menu);
+    await db.withMenuLock(async (menu) => {
+      const idx = menu.categories.findIndex(c => c.key === req.params.key);
+      if (idx === -1) throw new HttpError(404, 'Categoría no encontrada.');
+      menu.categories.splice(idx, 1);
+    });
     res.json({ ok: true });
   } catch (err) {
-    console.error('DELETE /api/categories/:key:', err);
-    res.status(500).json({ ok: false, error: 'Error al eliminar la categoría.' });
+    sendError(res, err, 'DELETE /api/categories/:key', 'Error al eliminar la categoría.');
   }
 });
 

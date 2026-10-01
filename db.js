@@ -32,6 +32,28 @@ async function saveMenu(menu) {
   );
 }
 
+// Corre fn(menu, client) dentro de una transacción con el registro del menú
+// bloqueado (FOR UPDATE), así dos pedidos/ediciones simultáneas no se pisan.
+// Si fn termina bien, el menú (posiblemente modificado) se guarda; si tira, se hace rollback.
+async function withMenuLock(fn) {
+  const client = await getPool().connect();
+  try {
+    await client.query('BEGIN');
+    const { rows } = await client.query('SELECT data FROM menu WHERE id = 1 FOR UPDATE');
+    if (rows.length === 0) throw new Error('El menú no existe en la base de datos. Corré migrate.js primero.');
+    const menu = rows[0].data;
+    const result = await fn(menu, client);
+    await client.query('UPDATE menu SET data = $1 WHERE id = 1', [JSON.stringify(menu)]);
+    await client.query('COMMIT');
+    return result;
+  } catch (err) {
+    await client.query('ROLLBACK').catch(() => {});
+    throw err;
+  } finally {
+    client.release();
+  }
+}
+
 // ── Pedidos ───────────────────────────────────────────────────
 
 function rowToOrder(row) {
@@ -67,8 +89,8 @@ async function getOrderById(id) {
   return rows.length > 0 ? rowToOrder(rows[0]) : null;
 }
 
-async function insertOrder(order) {
-  await getPool().query(
+async function insertOrder(order, client = getPool()) {
+  await client.query(
     `INSERT INTO orders
        (id, created_at, status, name, phone, mode, address, zone,
         delivery_fee, payment, cash_note, items, total)
@@ -125,6 +147,7 @@ module.exports = {
   getPool,
   loadMenu,
   saveMenu,
+  withMenuLock,
   loadOrders,
   getOrderById,
   insertOrder,
